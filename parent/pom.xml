@@ -1,0 +1,188 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-parent</artifactId>
+        <version>2.6.11</version>
+        <relativePath/> <!-- lookup parent from repository -->
+    </parent>
+
+    <groupId>org.hcm.lifpay</groupId>
+    <artifactId>parent</artifactId>
+    <version>1.0-SNAPSHOT</version>
+    <packaging>pom</packaging>
+
+    <modules>
+        <module>lifpay-core</module>
+        <module>lifpay-misc</module>
+        <module>lifpay-gateway</module>
+        <module>lifpay-admin</module>
+        <module>lifpay-user</module>
+    </modules>
+
+
+    <properties>
+        <maven.compiler.source>1.8</maven.compiler.source>
+        <maven.compiler.target>1.8</maven.compiler.target>
+        <spring-cloud.version>2021.0.4</spring-cloud.version>
+        <spring-boot-admin.version>2.7.9</spring-boot-admin.version>
+        <commons-io.version>2.11.0</commons-io.version>
+        <commons-collections.version>3.2.2</commons-collections.version>
+
+        <fastjson.version>1.2.83</fastjson.version>
+        <jackson-mapper-asl.version>1.9.13</jackson-mapper-asl.version>
+        <okhttp.version>3.14.4</okhttp.version>
+        <mybatis-spring.version>1.2.2</mybatis-spring.version>
+        <mysql-connector.version>6.0.6</mysql-connector.version>
+        <druid.version>1.1.20</druid.version>
+        <httpcomponents.version>4.1.4</httpcomponents.version>
+        <nacos.version>0.2.2.RELEASE</nacos.version>
+        <alibaba.nacos.version>2.1.4.RELEASE</alibaba.nacos.version>
+        <hutool.version>5.3.8</hutool.version>
+        <emoji.version>4.0.0</emoji.version>
+        <lombok.version>1.18.22</lombok.version>
+        <commons-collections4.version>4.4</commons-collections4.version>
+        <maven-source-plugin.version>3.2.1</maven-source-plugin.version>
+
+        <lifpay-core.version>1.0-SNAPSHOT</lifpay-core.version>
+        <lifpay-misc.version>1.0-SNAPSHOT</lifpay-misc.version>
+        <lifpay-gateway.version>1.0-SNAPSHOT</lifpay-gateway.version>
+        <lifpay-admin.version>1.0-SNAPSHOT</lifpay-admin.version>
+        <lifpay-user.version>1.0-SNAPSHOT</lifpay-user.version>
+    </properties>
+
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>org.springframework.cloud</groupId>
+                <artifactId>spring-cloud-dependencies</artifactId>
+                <version>${spring-cloud.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+            <dependency>
+                <groupId>commons-io</groupId>
+                <artifactId>commons-io</artifactId>
+                <version>${commons-io.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.apache.commons</groupId>
+                <artifactId>commons-collections4</artifactId>
+                <version>${commons-collections4.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>commons-collections</groupId>
+                <artifactId>commons-collections</artifactId>
+                <version>${commons-collections.version}</version>
+            </dependency>
+            <!-- network -->
+            <dependency>
+                <groupId>org.mybatis.spring.boot</groupId>
+                <artifactId>mybatis-spring-boot-starter</artifactId>
+                <version>${mybatis-spring.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.squareup.okhttp3</groupId>
+                <artifactId>okhttp</artifactId>
+                <version>${okhttp.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.httpcomponents</groupId>
+                <artifactId>httpasyncclient</artifactId>
+                <version>${httpcomponents.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.alibaba</groupId>
+                <artifactId>fastjson</artifactId>
+                <version>${fastjson.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.codehaus.jackson</groupId>
+                <artifactId>jackson-mapper-asl</artifactId>
+                <version>${jackson-mapper-asl.version}</version>
+            </dependency>
+            <!-- database -->
+            <dependency>
+                <groupId>mysql</groupId>
+                <artifactId>mysql-connector-java</artifactId>
+                <version>${mysql-connector.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.alibaba</groupId>
+                <artifactId>druid-spring-boot-starter</artifactId>
+                <version>${druid.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.alibaba</groupId>
+                <artifactId>druid</artifactId>
+                <version>${druid.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.alibaba.cloud</groupId>
+                <artifactId>spring-cloud-starter-alibaba-nacos-discovery</artifactId>
+                <version>${alibaba.nacos.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.alibaba.cloud</groupId>
+                <artifactId>spring-cloud-starter-alibaba-nacos-config</artifactId>
+                <version>${alibaba.nacos.version}</version>
+            </dependency>
+            <!-- 项目模块-->
+            <dependency>
+                <groupId>org.hcm.lifpay</groupId>
+                <artifactId>lifpay-core</artifactId>
+                <version>${lifpay-core.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.hcm.lifpay</groupId>
+                <artifactId>lifpay-misc</artifactId>
+                <version>${lifpay-misc.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.hcm.lifpay</groupId>
+                <artifactId>lifpay-gateway</artifactId>
+                <version>${lifpay-gateway.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.hcm.lifpay</groupId>
+                <artifactId>lifpay-admin</artifactId>
+                <version>${lifpay-admin.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.hcm.lifpay</groupId>
+                <artifactId>lifpay-user</artifactId>
+                <version>${lifpay-user.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>cn.hutool</groupId>
+                <artifactId>hutool-all</artifactId>
+                <version>${hutool.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>com.vdurmont</groupId>
+                <artifactId>emoji-java</artifactId>
+                <version>${emoji.version}</version>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <optional>true</optional>
+            <version>${lombok.version}</version>
+        </dependency>
+    </dependencies>
+
+</project>

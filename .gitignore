@@ -1,0 +1,13 @@
+# Java构建产物（必排）
+target/
+**/target/
+*.jar
+*.war
+*.ear
+# 开发工具无关文件
+.idea/
+*.iml
+.DS_Store
+# 日志/临时文件
+*.log
+tmp/
