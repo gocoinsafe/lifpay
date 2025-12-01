@@ -10,6 +10,9 @@ public class MnemonicExample {
 
 
 
+    /**
+     * 生成助记词
+     * */
     public static void main(String[] args) throws Exception {
         SecureRandom random = new SecureRandom();
 
