@@ -37,16 +37,19 @@
         <jackson-mapper-asl.version>1.9.13</jackson-mapper-asl.version>
         <okhttp.version>3.14.4</okhttp.version>
         <mybatis-spring.version>1.2.2</mybatis-spring.version>
-        <mysql-connector.version>6.0.6</mysql-connector.version>
-        <druid.version>1.1.20</druid.version>
+        <mysql-connector.version>8.0.27</mysql-connector.version>
+        <druid.version>1.2.8</druid.version>
         <httpcomponents.version>4.1.4</httpcomponents.version>
         <nacos.version>0.2.2.RELEASE</nacos.version>
         <alibaba.nacos.version>2.1.4.RELEASE</alibaba.nacos.version>
-        <hutool.version>5.3.8</hutool.version>
+        <hutool.version>5.8.11</hutool.version>
         <emoji.version>4.0.0</emoji.version>
-        <lombok.version>1.18.22</lombok.version>
+        <lombok.version>1.18.30</lombok.version>
         <commons-collections4.version>4.4</commons-collections4.version>
         <maven-source-plugin.version>3.2.1</maven-source-plugin.version>
+
+        <nacos.cloud.version>2021.0.4.0</nacos.cloud.version>
+        <spring-cloud-alibaba.version>2021.0.4.0</spring-cloud-alibaba.version>
 
         <lifpay-core.version>1.0-SNAPSHOT</lifpay-core.version>
         <lifpay-misc.version>1.0-SNAPSHOT</lifpay-misc.version>
@@ -64,6 +67,7 @@
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
+
             <dependency>
                 <groupId>commons-io</groupId>
                 <artifactId>commons-io</artifactId>
@@ -106,32 +110,45 @@
                 <artifactId>jackson-mapper-asl</artifactId>
                 <version>${jackson-mapper-asl.version}</version>
             </dependency>
+
+            <!-- spring cloud alibaba 依赖 -->
+            <dependency>
+                <groupId>com.alibaba.cloud</groupId>
+                <artifactId>spring-cloud-alibaba-dependencies</artifactId>
+                <version>${spring-cloud-alibaba.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+
+            <!-- nacos配置中心 -->
+            <dependency>
+                <groupId>com.alibaba.cloud</groupId>
+                <artifactId>spring-cloud-starter-alibaba-nacos-config</artifactId>
+                <version>${nacos.cloud.version}</version>
+            </dependency>
+
+            <!-- nacos注册中心 -->
+            <dependency>
+                <groupId>com.alibaba.cloud</groupId>
+                <artifactId>spring-cloud-starter-alibaba-nacos-discovery</artifactId>
+                <version>${nacos.cloud.version}</version>
+            </dependency>
+
+
             <!-- database -->
             <dependency>
                 <groupId>mysql</groupId>
                 <artifactId>mysql-connector-java</artifactId>
                 <version>${mysql-connector.version}</version>
             </dependency>
+
+
             <dependency>
                 <groupId>com.alibaba</groupId>
                 <artifactId>druid-spring-boot-starter</artifactId>
                 <version>${druid.version}</version>
             </dependency>
-            <dependency>
-                <groupId>com.alibaba</groupId>
-                <artifactId>druid</artifactId>
-                <version>${druid.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.alibaba.cloud</groupId>
-                <artifactId>spring-cloud-starter-alibaba-nacos-discovery</artifactId>
-                <version>${alibaba.nacos.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.alibaba.cloud</groupId>
-                <artifactId>spring-cloud-starter-alibaba-nacos-config</artifactId>
-                <version>${alibaba.nacos.version}</version>
-            </dependency>
+
             <!-- 项目模块-->
             <dependency>
                 <groupId>org.hcm.lifpay</groupId>
