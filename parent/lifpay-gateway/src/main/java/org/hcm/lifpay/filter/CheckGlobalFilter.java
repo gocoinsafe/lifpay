@@ -10,6 +10,7 @@ import org.bouncycastle.util.encoders.Hex;
 
 import org.hcm.lifpay.common.GwResultEnum;
 import org.hcm.lifpay.common.ResultEnum;
+import org.hcm.lifpay.redis.RedisDBKey;
 import org.hcm.lifpay.util.*;
 import org.reactivestreams.Publisher;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -233,7 +234,7 @@ public class CheckGlobalFilter implements GlobalFilter, Ordered {
     }
 
     public String getUserIdFromToken(String token) {
-        String tokenKey = String.format(RedisKey.GET_ADMIN_USER_ID_BY_TOKEN, token);
+        String tokenKey = String.format(RedisDBKey.GET_USER_ID_BY_TOKEN, token);
 
         Object value = redisTemplate.opsForValue().get(tokenKey);
         if (null == value) {

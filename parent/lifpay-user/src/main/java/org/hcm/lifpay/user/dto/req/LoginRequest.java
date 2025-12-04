@@ -11,5 +11,11 @@ import org.hcm.lifpay.common.BaseRequest;
 @ToString(callSuper = true)
 public class LoginRequest extends BaseRequest {
 
-    String token;
+    String username;
+
+    String password;
+
+    String aesKey;
+
+    String privateContent;
 }

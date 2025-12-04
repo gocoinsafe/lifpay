@@ -3,3 +3,33 @@ server:
 spring:
   application:
     name: lifpay-user
+
+
+
+
+
+  redis:
+    database: 0
+    host: 127.0.0.1
+    port: 6379
+    password:
+    jedis:
+      pool:
+        max-idle: 8
+        max-wait: -1
+
+
+
+
+
+system:
+  sensitiveCipherKey: LifpaySensitiveDataCipherKey
+
+tokenExpireTime:
+  token_Expire_Time: 1800
+  refresh_token_Expire_Time: 604800
+
+
+admin:
+  domain: https://dev.lifpay.tech
+  secure: false

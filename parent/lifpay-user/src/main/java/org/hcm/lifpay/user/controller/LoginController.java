@@ -4,8 +4,11 @@ package org.hcm.lifpay.user.controller;
 import lombok.extern.slf4j.Slf4j;
 import org.hcm.lifpay.common.BaseResponse;
 import org.hcm.lifpay.user.dto.req.LoginRequest;
+import org.hcm.lifpay.user.service.LoginService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpServletResponse;
 import javax.xml.ws.Response;
 
 //import javax.servlet.http.HttpServletResponse;
@@ -17,6 +20,9 @@ import javax.xml.ws.Response;
 public class LoginController {
 
 
+    @Autowired
+    LoginService loginService;
+
 
     /**
      * 后台用户登录入口
@@ -25,9 +31,9 @@ public class LoginController {
      * @return 响应
      */
     @PostMapping(path = "/login")
-    public @ResponseBody BaseResponse login(@RequestBody LoginRequest request) {
+    public @ResponseBody BaseResponse login(@RequestBody LoginRequest request, HttpServletResponse httpServletResponse) {
 
-        return BaseResponse.success("Login success!");
+        return loginService.login(request, httpServletResponse);
     }
 
 

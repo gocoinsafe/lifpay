@@ -6,6 +6,6 @@ package org.hcm.lifpay.common;
  */
 public class Constants {
 
-    public static final String TOKEN_NAME = "HCMToken";
+    public static final String TOKEN_NAME = "LifpayToken";
 
 }
