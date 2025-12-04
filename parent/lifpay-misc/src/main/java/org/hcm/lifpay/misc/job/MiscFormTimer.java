@@ -5,7 +5,7 @@ package org.hcm.lifpay.misc.job;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import org.apache.commons.collections4.CollectionUtils;
-import org.hcm.lifpay.misc.dao.dataobject.StoreFormEntity;
+import org.hcm.lifpay.misc.dao.dataobject.StoreFormDO;
 import org.hcm.lifpay.misc.dao.mapper.StoreFormMapper;
 import org.hcm.lifpay.misc.service.MailService;
 import org.hcm.lifpay.util.DateTimeUtil;
@@ -14,8 +14,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
-import java.time.Duration;
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Objects;
 
@@ -55,20 +53,20 @@ public class MiscFormTimer {
                     startTime, currentTime);
 
             // 2. 构造查询条件：createTime在[startTime, currentTime)之间（左闭右开，避免重复查询）
-            LambdaQueryWrapper<StoreFormEntity> queryWrapper = Wrappers.<StoreFormEntity>lambdaQuery()
+            LambdaQueryWrapper<StoreFormDO> queryWrapper = Wrappers.<StoreFormDO>lambdaQuery()
                     // 时间区间查询（适配毫秒级字段，数据库需是datetime(3)或timestamp(3)）
-                    .ge(StoreFormEntity::getCreateTime, startTime) // 大于等于开始时间
-                    .lt(StoreFormEntity::getCreateTime, currentTime); // 小于结束时间（避免和下一次任务重复）
+                    .ge(StoreFormDO::getCreateTime, startTime) // 大于等于开始时间
+                    .lt(StoreFormDO::getCreateTime, currentTime); // 小于结束时间（避免和下一次任务重复）
 
             // 3. 查询数据
-            List<StoreFormEntity> formList = storeFormMapper.selectList(queryWrapper);
+            List<StoreFormDO> formList = storeFormMapper.selectList(queryWrapper);
             if (CollectionUtils.isEmpty(formList)) {
                 log.info("当前区间无新增表单，任务结束");
                 return;
             }
             // 优化核心：用 StringBuilder 替代字符串拼接（循环中 += 效率极低）、修复覆盖问题、非空防护、字段后加空格
             StringBuilder formInfo = new StringBuilder(); // 替换 String 为 StringBuilder，提升循环拼接效率
-            for (StoreFormEntity formData : formList) {
+            for (StoreFormDO formData : formList) {
                 // 1. 非空防护：避免字段为 null 时拼接出 "null" 字符串（用 Objects.toString 兜底空字符串）
                 Long id = formData.getId();
                 String name = Objects.toString(formData.getName(), "");

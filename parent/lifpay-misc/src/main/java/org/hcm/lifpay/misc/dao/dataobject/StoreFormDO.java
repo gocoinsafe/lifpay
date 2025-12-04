@@ -23,7 +23,7 @@ import java.io.Serializable;
 @Setter
 @Accessors(chain = true)
 @TableName("s_store_form")
-public class StoreFormEntity extends BaseEntity implements Serializable {
+public class StoreFormDO extends BaseEntity implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
