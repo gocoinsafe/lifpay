@@ -1,4 +1,4 @@
-package org.hcm.lifpay.misc.dao.dataobject;
+package org.hcm.lifpay.misc.dao.entity;
 
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
@@ -23,7 +23,7 @@ import java.io.Serializable;
 @Setter
 @Accessors(chain = true)
 @TableName("s_store_form")
-public class StoreFormDO extends BaseEntity implements Serializable {
+public class StoreFormDo extends BaseEntity implements Serializable {
 
     private static final long serialVersionUID = 1L;
 

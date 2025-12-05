@@ -4,7 +4,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.hcm.lifpay.common.BaseResponse;
 import org.hcm.lifpay.common.DigitalResultEnum;
 import org.hcm.lifpay.misc.common.ResultEnum;
-import org.hcm.lifpay.misc.dao.dataobject.StoreFormDO;
+import org.hcm.lifpay.misc.dao.entity.StoreFormDo;
 import org.hcm.lifpay.misc.dao.mapper.StoreFormMapper;
 import org.hcm.lifpay.misc.service.FormService;
 import org.hcm.lifpay.misc.vo.FormInfoRequest;
@@ -68,7 +68,7 @@ public class FormServiceImpl implements FormService {
 
             
             // 创建实体对象
-            StoreFormDO entity = new StoreFormDO();
+            StoreFormDo entity = new StoreFormDo();
             BeanUtils.copyProperties(request, entity);
             
             // 设置创建时间和更新时间
