@@ -3,9 +3,49 @@ server:
 spring:
   application:
     name: lifpay-user
-
-
-
+  datasource:
+#    url: jdbc:mysql://43.156.23.117:3306/misc?useUnicode=true&characterEncoding=utf-8&allowMultiQueries=true&autoReconnect=true&autoReconnectForPools=true&useSSL=false
+#    username: lifpay
+#    password: hcm@Lifpay.123!
+    url: jdbc:mysql://127.0.0.1:3306/user?useUnicode=true&characterEncoding=utf-8&allowMultiQueries=true&autoReconnect=true&autoReconnectForPools=true&useSSL=false
+    username: root
+    password: 123456789
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    type: com.alibaba.druid.pool.DruidDataSource
+    druid:
+      # 以下是druid连接池的配置（保持不变）
+      max-active: 20
+      min-idle: 5
+      max-wait: 60000
+      test-on-borrow: false
+      test-on-return: false
+      test-while-idle: true
+      time-between-eviction-runs-millis: 60000
+      min-evictable-idle-time-millis: 30000
+      initial-size: 5
+      validation-query: select '1'
+      filters: stat,wall
+      filter:
+        stat:
+          merge-sql: true
+          slow-sql-millis: 5000
+          log-slow-sql: true
+        wall:
+          config:
+            drop-table-allow: false
+            create-table-allow: false
+            truncate-allow: false
+            alter-table-allow: false
+      use-global-data-source-stat: true
+      stat-view-servlet:
+        login-username: admin
+        login-password: admin
+        url-pattern: /druid/*
+      web-stat-filter:
+        enabled: true
+        url-pattern: /*
+        exclusions: "*.js,*.gif,*.jpg,*.png,*.css,*.ico,/druid/*"
+        profile-enable: true
 
 
   redis:

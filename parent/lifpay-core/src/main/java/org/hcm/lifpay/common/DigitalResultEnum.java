@@ -18,7 +18,11 @@ public enum DigitalResultEnum {
     /**
      * 参数错误
      */
-    PARAM_ERROR(400, "参数错误");
+    PARAM_ERROR(400, "参数错误"),
+
+    NOT_LOGIN(3, "未登录"),
+
+    FORBIDDEN(1, "没有访问权限");
 
     private final int code;
     private final String desc;

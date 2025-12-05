@@ -10,6 +10,7 @@
     </parent>
 
     <artifactId>lifpay-user</artifactId>
+    <version>1.0-SNAPSHOT</version>
 
     <properties>
         <maven.compiler.source>8</maven.compiler.source>
@@ -46,6 +47,41 @@
             <artifactId>spring-boot-starter-web</artifactId>
         </dependency>
 
+        <dependency>
+            <groupId>com.alibaba</groupId>
+            <artifactId>druid-spring-boot-starter</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>mysql</groupId>
+            <artifactId>mysql-connector-java</artifactId>
+        </dependency>
+
+        <!-- mybatis 生成插件 -->
+        <dependency>
+            <groupId>com.baomidou</groupId>
+            <artifactId>mybatis-plus-boot-starter</artifactId>
+            <version>3.5.1</version>
+        </dependency>
+        <dependency>
+            <groupId>com.baomidou</groupId>
+            <artifactId>mybatis-plus-generator</artifactId>
+            <version>3.5.1</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.mybatis</groupId>
+            <artifactId>mybatis-spring</artifactId>
+            <version>2.0.6</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.mybatis</groupId>
+                    <artifactId>mybatis</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
+
 
         <dependency>
             <groupId>org.hcm.lifpay</groupId>
@@ -73,11 +109,6 @@
         </dependency>
 
 
-        <!--        <dependency>-->
-<!--            <groupId>org.bitcoinj</groupId>-->
-<!--            <artifactId>bitcoinj-core</artifactId>-->
-<!--            <version>0.16.1</version>-->
-<!--        </dependency>-->
 
     </dependencies>
 
@@ -86,6 +117,7 @@
 
     <!-- 构建插件：自动生成 proto 客户端（若上述 LND 依赖未生效时使用） -->
     <build>
+        <finalName>lifpay-user</finalName>
         <extensions>
             <extension>
                 <groupId>kr.motd.maven</groupId>

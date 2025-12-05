@@ -1,12 +1,15 @@
 package org.hcm.lifpay.user.service.impl;
 
 import com.alibaba.fastjson.JSONObject;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.catalina.User;
 import org.apache.commons.lang3.StringUtils;
 import org.hcm.lifpay.common.BaseResponse;
 import org.hcm.lifpay.common.Constants;
 import org.hcm.lifpay.redis.RedisDBKey;
+import org.hcm.lifpay.redis.RedisDS;
+import org.hcm.lifpay.user.dao.entity.UserInfoDo;
+import org.hcm.lifpay.user.dao.repository.UserInfoRepository;
 import org.hcm.lifpay.user.dto.UserResultEnum;
 import org.hcm.lifpay.user.dto.req.LoginRequest;
 import org.hcm.lifpay.user.dto.resp.LoginResponse;
@@ -23,9 +26,6 @@ import org.springframework.cloud.context.config.annotation.RefreshScope;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.security.*;
-import java.security.spec.*;
-import java.util.Base64;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -41,6 +41,10 @@ import javax.servlet.http.HttpServletResponse;
 public class LoginServiceImpl implements LoginService {
 
     private final static Logger logger = LoggerFactory.getLogger(LoginServiceImpl.class);
+
+
+    @Autowired
+    private UserInfoRepository userInfoRepository;
 
 
     private static final String PASSWORD = "password";
@@ -105,20 +109,20 @@ public class LoginServiceImpl implements LoginService {
             logger.info("codeMap: {}", JSONObject.toJSONString(codeMap));
 
             String decUserName = SensitiveInfoUtil.apiDecrypt(request.getUsername(), request.getAesKey());
-//            QueryWrapper<AdminUserDO> queryWrapper = new QueryWrapper<>();
-//            queryWrapper.lambda()
-//                    .eq(AdminUserDO::getUserName, decUserName)
-//                    .eq(AdminUserDO::getPassword, localEncPwd);
-//            AdminUserDO user = adminUserDao.getOne(queryWrapper);
-//            if (null == user) {
-//                throw new LifpayException(UserResultEnum.BAD_COMBINATION.getCode(),
-//                        UserResultEnum.BAD_COMBINATION.getMsg());
-//            }
+            QueryWrapper<UserInfoDo> queryWrapper = new QueryWrapper<>();
+            queryWrapper.lambda()
+                    .eq(UserInfoDo::getName, decUserName)
+                    .eq(UserInfoDo::getPassword, localEncPwd);
+            UserInfoDo user = userInfoRepository.selectOne(queryWrapper);
+            if (null == user) {
+                throw new LifpayException(UserResultEnum.BAD_COMBINATION.getCode(),
+                        UserResultEnum.BAD_COMBINATION.getMsg());
+            }
             LoginResponse loginResponse = new LoginResponse();
 //            loginResponse.setUserId(user.getId());
 //            loginResponse.setUsername(user.getUserName());
             // 缓存token
-            String token = getToken(user.getId(), user.getUserName(), publicKey);
+            String token = getToken(user.getId(), user.getName(), publicKey);
             // 缓存refresh token
 //            String refreshToken = generateRefreshToken(user.getId(), user.getUserName(), publicKey);
             // 缓存用户信息
@@ -294,6 +298,12 @@ public class LoginServiceImpl implements LoginService {
 //        redisDS.setex(userNameKey, userName, tokenValidTime);
 //    }
 
+    private String getUserDeviceIdFrmPubKey(String publicKey) {
+        if (publicKey.startsWith(VALUE)) {
+            return publicKey.substring(0, 22);
+        }
+        return publicKey.substring(0, 20);
+    }
     private String getToken(long userId, String userName, String publicKey) {
         logger.info("start to get token from Redis");
 //		int tokenExpiredDay = 3;
@@ -306,7 +316,7 @@ public class LoginServiceImpl implements LoginService {
         if (token == null) {
             token = createToken();
             redisDS.setex(key, token, tokenValidTime);
-            String tokenKey = String.format(RedisDBKey.GET_ADMINUSER_ID_BY_TOKEN, token);
+            String tokenKey = String.format(RedisDBKey.GET_USER_ID_BY_TOKEN, token);
             JSONObject jsonObject = new JSONObject();
             jsonObject.put("userId", userId);
             jsonObject.put("publicKey", publicKey);
