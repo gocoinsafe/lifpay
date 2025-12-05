@@ -1,6 +1,7 @@
 package org.hcm.lifpay.user.dto.resp;
 
 
+import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
 /**
@@ -11,9 +12,16 @@ import lombok.Data;
 @Data
 public class LoginResponse {
 
+    @ApiModelProperty(value = "用户id")
     Long userId;
+
+    @ApiModelProperty(value = "用户名")
     String username;
+
+    @ApiModelProperty(value = "token")
     String token;
+
+    @ApiModelProperty(value = "刷新token")
     String refreshToken;
 
 }
