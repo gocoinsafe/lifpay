@@ -6,6 +6,12 @@ import org.apache.catalina.User;
 import org.hcm.lifpay.user.dto.UserResultEnum;
 
 
+
+/**
+ * 基础运行时异常
+ *
+ * @author xinzhe
+ */
 @Data
 @EqualsAndHashCode(callSuper = true)
 @ToString(callSuper = true)

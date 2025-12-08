@@ -21,6 +21,17 @@ public enum UserResultEnum {
     USER_IDENTITY_NOT_EXISTS(9010, "用户身份不存在"),
     INSERT_RECORD_FAIL(9011, "数据保存失败"),
     MSG_REMOTE_SERVICE_ERR(9012, "Message服务调用失败"),
+    CONTACT_USER_NAME_ERR(9013, "联系人名称不能为空"),
+    CONTACT_ADDRESS_ERR(9014, "联系人钱包地址不能为空"),
+    ADD_CONTACT_USER_ERR(9015, "添加联系人异常"),
+    DELETE_CONTACT_USER_ERR(9016, "联系人不存在，请确认后再试"),
+    DELETE_CONTACT_USER_SUCCESS(9017, "删除联系人成功"),
+    DELETE_CONTACT_USER_EXCEPTION_ERR(9018, "删除联系人异常"),
+
+
+
+
+
     INVALID_REFRESH_TOKEN(6050, "无效的refresh Token")
     ;
 

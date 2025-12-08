@@ -1,15 +1,16 @@
-package org.hcm.lifpay.user.dto.resp;
+package org.hcm.lifpay.user.dto.req;
 
 
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
+import org.hcm.lifpay.common.BaseRequest;
+import org.hcm.lifpay.common.BaseResponse;
 
 @Data
-public class ContactListResp {
+public class AddContactReq extends BaseRequest {
 
-    @ApiModelProperty(value = "联系人Id")
+    @ApiModelProperty(value = "联系人Id，创建时不传")
     private Long id;
-
 
     @ApiModelProperty(value = "联系人姓名")
     private String contactName;
@@ -27,8 +28,5 @@ public class ContactListResp {
 
     @ApiModelProperty(value = "备注")
     private String note;
-
-
-
 
 }
