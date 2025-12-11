@@ -6,7 +6,7 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import org.apache.commons.collections4.CollectionUtils;
 import org.hcm.lifpay.misc.dao.entity.StoreFormDo;
-import org.hcm.lifpay.misc.dao.mapper.StoreFormMapper;
+import org.hcm.lifpay.misc.dao.repository.StoreFormRepository;
 import org.hcm.lifpay.misc.service.MailService;
 import org.hcm.lifpay.util.DateTimeUtil;
 import org.slf4j.Logger;
@@ -26,12 +26,12 @@ public class MiscFormTimer {
 
 
     // 注入依赖（确保已通过@Autowired或构造器注入）
-    private final StoreFormMapper storeFormMapper;
+    private final StoreFormRepository storeFormMapper;
     private final MailService mailService;
     private final Logger log = LoggerFactory.getLogger(MiscFormTimer.class);
 
     // 构造器注入（推荐，比@Autowired更优雅）
-    public MiscFormTimer(StoreFormMapper storeFormMapper, MailService mailService) {
+    public MiscFormTimer(StoreFormRepository storeFormMapper, MailService mailService) {
         this.storeFormMapper = storeFormMapper;
         this.mailService = mailService;
     }

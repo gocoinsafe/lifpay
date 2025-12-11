@@ -89,6 +89,7 @@ public class ContactServiceImpl implements ContactService {
         }
 
         UserContactDo userContactDo = new UserContactDo();
+        userContactDo.setUserId(req.getUserId());
         userContactDo.setContactName(req.getContactName());
         userContactDo.setAddress(req.getAddress());
         userContactDo.setEmail(req.getEmail());

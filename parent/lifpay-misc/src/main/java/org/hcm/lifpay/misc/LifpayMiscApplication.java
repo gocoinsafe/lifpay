@@ -15,7 +15,7 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 @EnableFeignClients
 @EnableScheduling
 @EnableAsync
-@MapperScan("org.hcm.lifpay.misc.dao.mapper")
+@MapperScan("org.hcm.lifpay.misc.dao.repository")
 @Slf4j
 public class LifpayMiscApplication {
 

@@ -5,17 +5,19 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.hcm.lifpay.common.BaseResponse;
+import org.hcm.lifpay.misc.dto.resp.CountryListResp;
 import org.hcm.lifpay.misc.service.FormService;
-import org.hcm.lifpay.misc.service.MailService;
-import org.hcm.lifpay.misc.vo.FormInfoRequest;
+import org.hcm.lifpay.misc.dto.req.FormInfoRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 
 @RestController
 @Api(value = "Lifpay表单", tags = "Lifpay表单")
 @Slf4j
-@RequestMapping("/misc")
+@RequestMapping("/api/misc")
 public class FormController {
 
     @Autowired
@@ -48,6 +50,14 @@ public class FormController {
 //            return "发送失败：" + e.getMessage();
 //        }
 //    }
+
+
+    @ApiOperation(value = "获取国家列表接口")
+    @PostMapping(path = "/country/list")
+    public BaseResponse<List<CountryListResp>> countryList() {
+        log.info("获取国家列表接口");
+        return formService.countryList();
+    }
 
 
 }

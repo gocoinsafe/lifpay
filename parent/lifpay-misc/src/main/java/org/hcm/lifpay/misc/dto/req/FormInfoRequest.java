@@ -1,4 +1,4 @@
-package org.hcm.lifpay.misc.vo;
+package org.hcm.lifpay.misc.dto.req;
 
 
 import lombok.Data;

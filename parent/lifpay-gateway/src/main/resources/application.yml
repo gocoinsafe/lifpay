@@ -8,6 +8,7 @@ spring:
   cloud:
     gateway:
       default-filters:
+        - PrefixPath=/api
       routes:
         - id: lifpay-user
 #          uri: lb://lifpay-user

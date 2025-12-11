@@ -1,28 +1,42 @@
 package org.hcm.lifpay.misc.service.impl;
 
+import cn.hutool.core.collection.CollectionUtil;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import lombok.extern.slf4j.Slf4j;
 import org.hcm.lifpay.common.BaseResponse;
 import org.hcm.lifpay.common.DigitalResultEnum;
 import org.hcm.lifpay.misc.common.ResultEnum;
+import org.hcm.lifpay.misc.constant.CountryStatus;
+import org.hcm.lifpay.misc.dao.entity.CountryListDo;
 import org.hcm.lifpay.misc.dao.entity.StoreFormDo;
-import org.hcm.lifpay.misc.dao.mapper.StoreFormMapper;
+import org.hcm.lifpay.misc.dao.repository.CountryListRepository;
+import org.hcm.lifpay.misc.dao.repository.StoreFormRepository;
+import org.hcm.lifpay.misc.dto.resp.CountryListResp;
 import org.hcm.lifpay.misc.service.FormService;
-import org.hcm.lifpay.misc.vo.FormInfoRequest;
+import org.hcm.lifpay.misc.dto.req.FormInfoRequest;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.context.config.annotation.RefreshScope;
 import org.springframework.stereotype.Service;
 import org.apache.commons.lang3.StringUtils;
 
+import java.util.ArrayList;
+import java.util.List;
 
 
 @RefreshScope
 @Service
 @Slf4j
-public class FormServiceImpl implements FormService {
+public class FormServiceImpl extends ServiceImpl<StoreFormRepository,StoreFormDo> implements FormService {
 
     @Autowired
-    private StoreFormMapper storeFormMapper;
+    private StoreFormRepository storeFormMapper;
+
+    @Autowired
+    private CountryListRepository countryListRepository;
+
+
 
 
     @Override
@@ -83,7 +97,7 @@ public class FormServiceImpl implements FormService {
             if (entity.getIdentity() == null) {
                 entity.setIdentity(0); // 默认guest
             }
-            
+
             // 插入数据库
             int result = storeFormMapper.insert(entity);
             
@@ -99,5 +113,34 @@ public class FormServiceImpl implements FormService {
             log.error("表单提交异常", e);
             return BaseResponse.fail(DigitalResultEnum.FAIL.getCode(), "表单提交失败: " + e.getMessage());
         }
+    }
+
+
+    @Override
+    public BaseResponse<List<CountryListResp>> countryList() {
+        log.info("countryList");
+        BaseResponse<List<CountryListResp>> response = new BaseResponse<>();
+
+        LambdaQueryWrapper<CountryListDo> queryWrapper = new LambdaQueryWrapper<CountryListDo>()
+                .eq(CountryListDo:: getStatus, CountryStatus.NORMAL);
+
+        List<CountryListDo> countryListDoList = countryListRepository.selectList(queryWrapper);
+        if (CollectionUtil.isEmpty(countryListDoList)){
+            log.info("国家列表信息为空！数据异常！:{}", countryListDoList.size());
+            return null;
+        }
+        List<CountryListResp> dataList = new ArrayList<>();
+        for (CountryListDo info :countryListDoList){
+            CountryListResp data = new CountryListResp();
+            data.setId(info.getId());
+            data.setCnName(info.getCnName());
+            data.setEnName(info.getEnName());
+            data.setCode(info.getCode());
+            data.setAbbreviation(info.getAbbreviation());
+            dataList.add(data);
+
+        }
+        response.setData(dataList);
+        return response;
     }
 }
