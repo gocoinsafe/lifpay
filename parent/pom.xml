@@ -22,6 +22,7 @@
         <module>lifpay-gateway</module>
         <module>lifpay-admin</module>
         <module>lifpay-user</module>
+        <module>lifpay-misc-share</module>
     </modules>
 
 
@@ -159,6 +160,12 @@
             <dependency>
                 <groupId>org.hcm.lifpay</groupId>
                 <artifactId>lifpay-misc</artifactId>
+                <version>${lifpay-misc.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.hcm.lifpay</groupId>
+                <artifactId>lifpay-misc-share</artifactId>
                 <version>${lifpay-misc.version}</version>
             </dependency>
 
