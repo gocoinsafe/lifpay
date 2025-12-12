@@ -82,3 +82,12 @@ mybatis-plus:
 
 
 
+misc:
+  sms:
+    secretId: IKIDBG9pIbgYFiAa1PbnqhMn370hBfz61WxU
+    SecretKey: c3HH4e045xfDc2IORL1UmtoVyDHIBrMe
+    sdkAppId: 2400001156
+    signName: LifPay
+    templateId: 2929134
+
+

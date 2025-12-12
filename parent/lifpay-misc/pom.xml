@@ -246,6 +246,13 @@
             <artifactId>spring-boot-test</artifactId>
         </dependency>
 
+<!--        腾讯云短信依赖-->
+        <dependency>
+            <groupId>com.tencentcloudapi</groupId>
+            <artifactId>tencentcloud-sdk-java-sms</artifactId>
+            <version>3.1.1281</version>
+        </dependency>
+
     </dependencies>
 
 

@@ -32,7 +32,12 @@ public enum ResultEnum {
     COUNTRY_NOT_NULL_ERROR(100105, "country cannot be empty.","国家不能为空"),
     AREA_NOT_NULL_ERROR(100106, "area cannot be empty.","区号不能为空"),
     EMAIL_INFORMATION_ERROR(100107, "Email cannot be empty.","Email方式不能为空"),
-    MESSAGE_NOT_NULL_ERROR(100108, "message cannot be empty.","message不能为空");
+    MESSAGE_NOT_NULL_ERROR(100108, "message cannot be empty.","message不能为空"),
+    CONTACT_NOT_NULL_ERROR(100109, "contact cannot be empty.","联系方式不能为空"),
+    CONTACT_TYPE_NOT_NULL_ERROR(100110, "contact type cannot be empty.","联系方式类型不能为空"),
+    SMS_SEND_ERROR(100111, "The text message failed to be sent. Please try again later.","短信发送失败，请稍后再试"),
+
+    ;
 
 
 

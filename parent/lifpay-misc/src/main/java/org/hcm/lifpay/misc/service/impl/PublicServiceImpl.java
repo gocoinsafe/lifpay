@@ -1,0 +1,107 @@
+package org.hcm.lifpay.misc.service.impl;
+
+import com.alibaba.druid.util.StringUtils;
+import com.alibaba.fastjson.JSON;
+import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.tencentcloudapi.common.exception.TencentCloudSDKException;
+import com.tencentcloudapi.sms.v20210111.models.SendSmsResponse;
+import lombok.extern.slf4j.Slf4j;
+import org.hcm.lifpay.common.BaseResponse;
+import org.hcm.lifpay.misc.common.ResultEnum;
+import org.hcm.lifpay.misc.constant.VerifyCodeTypeEnum;
+import org.hcm.lifpay.misc.dao.entity.VerifyCodeDo;
+import org.hcm.lifpay.misc.dao.repository.VerifyCodeRepository;
+import org.hcm.lifpay.misc.dto.req.GetVerifyCodeReq;
+import org.hcm.lifpay.misc.providers.SMSProvider;
+import org.hcm.lifpay.misc.service.PublicService;
+import org.hcm.lifpay.util.CommonUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cloud.context.config.annotation.RefreshScope;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import javax.annotation.Resource;
+import java.util.Arrays;
+
+
+@Slf4j
+@RefreshScope
+@Service
+public class PublicServiceImpl extends ServiceImpl<VerifyCodeRepository, VerifyCodeDo> implements PublicService {
+
+    private final static Logger logger = LoggerFactory.getLogger(PublicServiceImpl.class);
+
+
+    @Autowired
+    private VerifyCodeRepository verifyCodeRepository;
+
+    @Resource
+    private SMSProvider smsProvider;
+
+
+
+    @Override
+    public BaseResponse<String> getVerifyCode(GetVerifyCodeReq req) {
+        logger.info("PublicServiceImpl.getVerifyCode.req:{}", JSON.toJSONString(req));
+        // 1. 参数校验（保留你的原有逻辑，优化提示）
+        if (StringUtils.isEmpty(req.getContact())) {
+            return BaseResponse.fail(ResultEnum.CONTACT_NOT_NULL_ERROR.getCode(), ResultEnum.CONTACT_NOT_NULL_ERROR.getDesc());
+        }
+        if (null == req.getType()) {
+            return BaseResponse.fail(ResultEnum.CONTACT_TYPE_NOT_NULL_ERROR.getCode(), ResultEnum.CONTACT_TYPE_NOT_NULL_ERROR.getDesc());
+        }
+        if (!VerifyCodeTypeEnum.EMAIL.getType().equals(req.getType()) && !VerifyCodeTypeEnum.PHONE.getType().equals(req.getType())) {
+            return BaseResponse.fail(ResultEnum.PARAM_ERROR.getCode(), ResultEnum.PARAM_ERROR.getDesc());
+        }
+        BaseResponse<String> response = new BaseResponse<>();
+        // 生成6位数验证码（确保CommonUtil用的是SecureRandom）
+        String verifyCode = CommonUtil.generate6DigitCode();
+
+        // 3. 组装保存对象（保留你的原有逻辑）
+        VerifyCodeDo verifyCodeDo = new VerifyCodeDo();
+        // 2. 手机号短信逻辑
+        if (VerifyCodeTypeEnum.PHONE.getType().equals(req.getType())) {
+            try {
+                // 调用短信发送（复用单例client，性能优化）
+                SendSmsResponse sendSmsResponse = smsProvider.buildSMSRequest(req.getContact(), verifyCode);
+                verifyCodeDo.setType(VerifyCodeTypeEnum.PHONE.getType());
+                verifyCodeDo.setRequestId(sendSmsResponse.getRequestId());
+                verifyCodeDo.setResultJson(Arrays.toString(sendSmsResponse.getSendStatusSet()));
+
+
+            } catch (IllegalArgumentException e) {
+                logger.error("参数错误：{}", e.getMessage());
+                return BaseResponse.fail(ResultEnum.PARAM_ERROR.getCode(), e.getMessage());
+            } catch (TencentCloudSDKException e) {
+                logger.error("短信发送失败：{}", e.getMessage());
+                return BaseResponse.fail(ResultEnum.SMS_SEND_ERROR.getCode(), ResultEnum.SMS_SEND_ERROR.getDesc());
+            } catch (Exception e) {
+                logger.error("验证码发送异常", e);
+                return BaseResponse.fail(ResultEnum.SYSTEM_BUSY.getCode(), "系统异常，请稍后重试");
+            }
+        }else if (VerifyCodeTypeEnum.EMAIL.getType().equals(req.getType())){
+
+        }else {
+            response.setMessage("暂不支持邮箱、手机号以外的类型！");
+        }
+
+        verifyCodeDo.setContact(req.getContact());
+        verifyCodeDo.setVerifyCode(verifyCode);
+        verifyCodeDo.setStatus(0);
+        verifyCodeDo.setCreateTime(System.currentTimeMillis());
+        verifyCodeDo.setUpdateTime(System.currentTimeMillis());
+        // 4. 保存验证码
+        int result = verifyCodeRepository.insert(verifyCodeDo);
+        if (result <= 0) {
+            logger.warn("保存验证码失败，手机号：{}", req.getContact());
+        }
+
+        return BaseResponse.success("验证码发送成功");
+    }
+    private void saveVerifyCode(GetVerifyCodeReq req,  String verifyCode){
+
+
+    }
+}

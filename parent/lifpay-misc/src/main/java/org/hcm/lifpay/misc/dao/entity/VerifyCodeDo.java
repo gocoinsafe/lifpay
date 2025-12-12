@@ -61,4 +61,18 @@ public class VerifyCodeDo extends BaseEntity implements Serializable {
     @TableField("status")
     private Integer status;
 
+    /**
+     * 腾讯云请求id
+     */
+
+    @TableField("request_id")
+    private String requestId;
+
+    /**
+     * 短信返回结果
+     */
+
+    @TableField("result_json")
+    private String resultJson;
+
 }
