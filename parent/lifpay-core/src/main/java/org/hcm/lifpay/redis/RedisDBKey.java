@@ -32,6 +32,9 @@ public class RedisDBKey {
     public static final String GET_USER_ID_BY_TOKEN = "user:token:%s";
 
 
-
+    /**
+     * 根据refresh token查userId
+     */
+    public static final String GET_USER_ID_BY_REFRESH_TOKEN = "user:refresh_token:%s";
 
 }

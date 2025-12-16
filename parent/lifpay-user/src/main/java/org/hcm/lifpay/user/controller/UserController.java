@@ -1,6 +1,7 @@
 package org.hcm.lifpay.user.controller;
 
 
+import com.alibaba.fastjson.JSON;
 import lombok.extern.slf4j.Slf4j;
 import org.hcm.lifpay.common.BaseResponse;
 import org.hcm.lifpay.user.dto.req.LoginRequest;
@@ -31,7 +32,7 @@ public class UserController {
      */
     @PostMapping(path = "/login")
     public @ResponseBody BaseResponse login(@RequestBody LoginRequest request, HttpServletResponse httpServletResponse) {
-        log.info("");
+        log.info("UserController.login:{}", JSON.toJSONString(request));
         return loginService.login(request, httpServletResponse);
     }
 

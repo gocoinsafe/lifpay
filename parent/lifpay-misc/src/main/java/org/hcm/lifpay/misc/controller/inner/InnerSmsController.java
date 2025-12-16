@@ -6,7 +6,10 @@ import io.swagger.annotations.*;
 import lombok.extern.slf4j.Slf4j;
 import org.hcm.lifpay.common.BaseResponse;
 import org.hcm.lifpay.misc.dto.req.GetVerifyCodeReq;
+import org.hcm.lifpay.misc.req.InnerGetVerifyCodeReq;
 import org.hcm.lifpay.misc.resp.GetVerifyCodeResp;
+import org.hcm.lifpay.misc.service.SmsService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -26,6 +29,8 @@ import javax.validation.Valid;
 @Slf4j
 public class InnerSmsController {
 
+    @Autowired
+    private SmsService smsService;
 
 
     /**
@@ -39,7 +44,7 @@ public class InnerSmsController {
     @ApiImplicitParam(value = "请求参数", required = true, dataType = "SmsCodeVerifyRequest", name = "request")
     @ApiResponses(value = {@ApiResponse(code = 200, message = "Success message")})
     @ResponseBody
-    BaseResponse<GetVerifyCodeResp> smsCodeVerify(@Valid @RequestBody GetVerifyCodeReq request) {
+    BaseResponse<GetVerifyCodeResp> smsCodeVerify(@Valid @RequestBody InnerGetVerifyCodeReq request) {
         String logPrefix = "smsCodeVerify";
         log.info("{} request params: {}", logPrefix, JSON.toJSONString(request));
         BaseResponse<GetVerifyCodeResp> result = smsService.smsCodeVerify(request);

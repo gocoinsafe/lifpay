@@ -2,6 +2,7 @@ package org.hcm.lifpay.misc;
 
 
 import org.hcm.lifpay.common.BaseResponse;
+import org.hcm.lifpay.config.ServiceFeignConfiguration;
 import org.hcm.lifpay.misc.req.InnerGetVerifyCodeReq;
 import org.hcm.lifpay.misc.resp.GetVerifyCodeResp;
 import org.springframework.cloud.openfeign.FeignClient;
@@ -16,7 +17,7 @@ import javax.validation.Valid;
  *
  * @author xinzhe
  */
-@FeignClient
+@FeignClient(value = "lifpay-misc", configuration = ServiceFeignConfiguration.class)
 public interface MiscClient {
 
 

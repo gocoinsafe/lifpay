@@ -73,10 +73,10 @@ public class UserLoginServiceImpl implements UserLoginService {
 
     @Value("${tokenExpireTime.token_Expire_Time}")
     int tokenValidTime;
-//
-//    @Value("${tokenExpireTime.refresh_token_Expire_Time}")
-//    int refreshTokenValidTime;
-//
+
+    @Value("${tokenExpireTime.refresh_token_Expire_Time}")
+    int refreshTokenValidTime;
+
     @Value("${admin.domain}")
     String domain;
 
@@ -167,11 +167,11 @@ public class UserLoginServiceImpl implements UserLoginService {
         return response;
     }
 
-//    private void cacheUserInfo(AdminUserDO adminUserDO) {
-//        // 从数据库获取用户信息
+    private void cacheUserInfo(UserInfoDo userInfoDo) {
+        // 从数据库获取用户信息
 //        AdminUserInfo adminUserInfo = adminUserDao.getAdminUserInfoById(adminUserDO.getId());
 //        AuthUtil.setUserInfoCache(adminUserInfo, tokenValidTime);
-//    }
+    }
 
     private Cookie createCookie(String key, String value, int maxAge, String domain, boolean httpOnly) {
         logger.info("create cookie :{}；{}；{}；{}； {}", key, value, maxAge, domain, httpOnly);
@@ -191,22 +191,22 @@ public class UserLoginServiceImpl implements UserLoginService {
      * @param userId 用户id deviceId 设备号
      * @return refresh token
      */
-//    private String generateRefreshToken(long userId, String deviceId, String publicKey) {
-//        String key = getRefreshTokenKey(String.valueOf(userId), getUserDeviceIdFrmPubKey(publicKey));
-//        String refreshToken = createToken();
-//        logger.info("start generateRefreshToken:{}", refreshToken);
-//        //设置refresh token 有效时间
-//        redisDS.setex(key, refreshToken, refreshTokenValidTime);
-//        String tokenKey = String.format(RedisDBKey.GET_ADMINUSER_ID_BY_REFRESH_TOKEN, refreshToken);
-//        JSONObject jsonObject = new JSONObject();
-//        jsonObject.put("userId", userId);
-//        jsonObject.put("deviceId", deviceId);
-//        jsonObject.put("timestamp", System.currentTimeMillis());
-//        jsonObject.put("publicKey", publicKey);
-//        redisDS.setex(tokenKey, jsonObject.toJSONString(), refreshTokenValidTime);
-//        logger.info("end generateRefreshToken:{}", jsonObject.toJSONString());
-//        return refreshToken;
-//    }
+    private String generateRefreshToken(long userId, String deviceId, String publicKey) {
+        String key = getRefreshTokenKey(String.valueOf(userId), getUserDeviceIdFrmPubKey(publicKey));
+        String refreshToken = createToken();
+        logger.info("start generateRefreshToken:{}", refreshToken);
+        //设置refresh token 有效时间
+        redisDS.setex(key, refreshToken, refreshTokenValidTime);
+        String tokenKey = String.format(RedisDBKey.GET_USER_ID_BY_REFRESH_TOKEN, refreshToken);
+        JSONObject jsonObject = new JSONObject();
+        jsonObject.put("userId", userId);
+        jsonObject.put("deviceId", deviceId);
+        jsonObject.put("timestamp", System.currentTimeMillis());
+        jsonObject.put("publicKey", publicKey);
+        redisDS.setex(tokenKey, jsonObject.toJSONString(), refreshTokenValidTime);
+        logger.info("end generateRefreshToken:{}", jsonObject.toJSONString());
+        return refreshToken;
+    }
 
     private String getRefreshTokenKey(String userId, String deviceId) {
         return String.format(RedisDBKey.GET_REFRESH_TOKEN_BY_USER, userId, deviceId);
