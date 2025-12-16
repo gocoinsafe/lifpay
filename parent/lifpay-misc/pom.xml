@@ -252,6 +252,10 @@
             <artifactId>tencentcloud-sdk-java-sms</artifactId>
             <version>3.1.1281</version>
         </dependency>
+        <dependency>
+            <groupId>org.hcm.lifpay</groupId>
+            <artifactId>lifpay-misc-share</artifactId>
+        </dependency>
 
     </dependencies>
 

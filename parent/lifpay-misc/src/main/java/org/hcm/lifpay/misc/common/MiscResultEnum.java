@@ -3,7 +3,7 @@ package org.hcm.lifpay.misc.common;
 
 
 
-public enum ResultEnum {
+public enum MiscResultEnum {
 
 
     //系统异常状态码
@@ -24,6 +24,7 @@ public enum ResultEnum {
      * 系统繁忙，请稍后再试
      */
     SYSTEM_BUSY(3, "System is busy, please try again later","系统繁忙，请稍后再试"),
+    FAILED(4, "failed","失败"),
 
     THE_CHARACTER_LENGTH_ERROR(100101, "The character count exceeds the length limit.","字符超过长度限制！"),
     ILLEGAL_CHARACTERS_ERROR(100102, "Illegal characters","非法字符"),
@@ -36,7 +37,12 @@ public enum ResultEnum {
     CONTACT_NOT_NULL_ERROR(100109, "contact cannot be empty.","联系方式不能为空"),
     CONTACT_TYPE_NOT_NULL_ERROR(100110, "contact type cannot be empty.","联系方式类型不能为空"),
     SMS_SEND_ERROR(100111, "The text message failed to be sent. Please try again later.","短信发送失败，请稍后再试"),
-
+    /**
+     * 工作量证明随机数错误
+     */
+    INVALID_RANDOM(100112,"Random number error", "随机数错误"),
+    INVALID_SMS_CODE(100113,"The verification code is incorrect. Please re-enter it!", "验证码错误，请重新输入！"),
+    EXPIRED_SMS_CODE(100114, "The verification code has expired. Please obtain a new one!","验证码已经失效，请重新获取！"),
     ;
 
 
@@ -46,17 +52,17 @@ public enum ResultEnum {
     private final String desc;
     private String chMsg;
 
-    ResultEnum(Integer code, String desc, String chMsg) {
+    MiscResultEnum(Integer code, String desc, String chMsg) {
         this.code = code;
         this.desc = desc;
         this.chMsg = chMsg;
     }
 
-    public static ResultEnum getEnum(Integer code) {
+    public static MiscResultEnum getEnum(Integer code) {
         if (null == code) {
             return null;
         }
-        for (ResultEnum temp : ResultEnum.values()) {
+        for (MiscResultEnum temp : MiscResultEnum.values()) {
             if (code.intValue() == temp.getCode().intValue()) {
                 return temp;
             }

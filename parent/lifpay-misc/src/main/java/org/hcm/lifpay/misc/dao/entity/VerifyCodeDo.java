@@ -41,6 +41,13 @@ public class VerifyCodeDo extends BaseEntity implements Serializable {
     private String contact;
 
     /**
+     *  手机号区号
+     */
+
+    @TableField("area")
+    private String area;
+
+    /**
      * 消息类型：0-邮箱，1-手机号
      */
 

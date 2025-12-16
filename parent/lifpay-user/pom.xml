@@ -107,7 +107,10 @@
             <version>RELEASE</version>
             <scope>test</scope>
         </dependency>
-
+        <dependency>
+            <groupId>org.hcm.lifpay</groupId>
+            <artifactId>lifpay-misc-share</artifactId>
+        </dependency>
 
 
     </dependencies>

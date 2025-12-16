@@ -1,29 +1,36 @@
 package org.hcm.lifpay.util;
 
+import org.apache.commons.lang3.StringUtils;
+
+import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.security.SecureRandom;
-import java.text.DecimalFormat;
 
 public class CommonUtil {
 
 
-    private static final SecureRandom SECURE_RANDOM = new SecureRandom();
-    // 6位数字格式化器（不足6位时前面补零）
-    private static final DecimalFormat SIX_DIGIT_FORMAT = new DecimalFormat("000000");
 
     /**
      * 生成6位数字验证码（通用版，支持补零）
      * @return 6位数字字符串（如 008976）
      */
-    public static String generate6DigitCode() {
-        // 生成 [0, 999999] 之间的随机整数
-        int randomNum = SECURE_RANDOM.nextInt(1000000);
-        // 格式化补零，确保6位
-        return SIX_DIGIT_FORMAT.format(randomNum);
+    public static String getRandomInteger(int len) {
+        SecureRandom random = new SecureRandom();
+        BigDecimal randomBd = BigDecimal.valueOf(random.nextDouble());
+        BigInteger randomNum = randomBd.multiply(new BigDecimal(10).pow(len + 3)).toBigInteger();
+        String randomStr = String.valueOf(randomNum);
+        if(randomStr.length() > len){
+            return randomStr.substring(0, len);
+        }
+        if(randomStr.length() < len){
+            return StringUtils.leftPad(randomStr, len, "0");
+        }
+        return randomStr;
     }
 
     public static void main(String[] args) {
         for (int i = 0; i < 5; i++) {
-            System.out.println("6位验证码：" + generate6DigitCode());
+            System.out.println("6位验证码：" + getRandomInteger(6));
         }
     }
 

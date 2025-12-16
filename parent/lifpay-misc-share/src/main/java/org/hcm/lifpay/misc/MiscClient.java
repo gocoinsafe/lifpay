@@ -2,7 +2,7 @@ package org.hcm.lifpay.misc;
 
 
 import org.hcm.lifpay.common.BaseResponse;
-import org.hcm.lifpay.misc.req.GetVerifyCodeReq;
+import org.hcm.lifpay.misc.req.InnerGetVerifyCodeReq;
 import org.hcm.lifpay.misc.resp.GetVerifyCodeResp;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -28,7 +28,7 @@ public interface MiscClient {
      * @return 验证码
      */
     @PostMapping(path = {"/inner/misc/get/verifyCode"})
-    BaseResponse<GetVerifyCodeResp> getVerifyCode(@Valid @RequestBody GetVerifyCodeReq request);
+    BaseResponse<GetVerifyCodeResp> getVerifyCode(@Valid @RequestBody InnerGetVerifyCodeReq request);
 
 
 }

@@ -6,7 +6,7 @@ import org.hcm.lifpay.user.dto.resp.LoginResponse;
 
 import javax.servlet.http.HttpServletResponse;
 
-public interface LoginService {
+public interface UserLoginService {
 
 
     /**

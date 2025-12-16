@@ -6,7 +6,7 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import lombok.extern.slf4j.Slf4j;
 import org.hcm.lifpay.common.BaseResponse;
 import org.hcm.lifpay.common.DigitalResultEnum;
-import org.hcm.lifpay.misc.common.ResultEnum;
+import org.hcm.lifpay.misc.common.MiscResultEnum;
 import org.hcm.lifpay.misc.constant.CountryStatus;
 import org.hcm.lifpay.misc.dao.entity.CountryListDo;
 import org.hcm.lifpay.misc.dao.entity.StoreFormDo;
@@ -50,33 +50,33 @@ public class FormServiceImpl extends ServiceImpl<StoreFormRepository,StoreFormDo
         try {
             // 参数校验
             if (StringUtils.isEmpty(request.getName())) {
-                return BaseResponse.fail(ResultEnum.NAME_NOT_NULL_ERROR.getCode(), ResultEnum.NAME_NOT_NULL_ERROR.getDesc());
+                return BaseResponse.fail(MiscResultEnum.NAME_NOT_NULL_ERROR.getCode(), MiscResultEnum.NAME_NOT_NULL_ERROR.getDesc());
             }
             if (StringUtils.isNotEmpty(request.getName()) && request.getName().length() > 200) {
-                return BaseResponse.fail(ResultEnum.ILLEGAL_CHARACTERS_ERROR.getCode(), ResultEnum.ILLEGAL_CHARACTERS_ERROR.getDesc());
+                return BaseResponse.fail(MiscResultEnum.ILLEGAL_CHARACTERS_ERROR.getCode(), MiscResultEnum.ILLEGAL_CHARACTERS_ERROR.getDesc());
             }
             
             if (StringUtils.isEmpty(request.getEmail())) {
-                return BaseResponse.fail(ResultEnum.EMAIL_INFORMATION_ERROR.getCode(), ResultEnum.EMAIL_INFORMATION_ERROR.getDesc());
+                return BaseResponse.fail(MiscResultEnum.EMAIL_INFORMATION_ERROR.getCode(), MiscResultEnum.EMAIL_INFORMATION_ERROR.getDesc());
             }
             if (StringUtils.isNotEmpty(request.getEmail()) && request.getEmail().length() > 200) {
-                return BaseResponse.fail(ResultEnum.ILLEGAL_CHARACTERS_ERROR.getCode(), ResultEnum.ILLEGAL_CHARACTERS_ERROR.getDesc());
+                return BaseResponse.fail(MiscResultEnum.ILLEGAL_CHARACTERS_ERROR.getCode(), MiscResultEnum.ILLEGAL_CHARACTERS_ERROR.getDesc());
             }
             if (StringUtils.isEmpty(request.getMessage())) {
-                return BaseResponse.fail(ResultEnum.MESSAGE_NOT_NULL_ERROR.getCode(), ResultEnum.MESSAGE_NOT_NULL_ERROR.getDesc());
+                return BaseResponse.fail(MiscResultEnum.MESSAGE_NOT_NULL_ERROR.getCode(), MiscResultEnum.MESSAGE_NOT_NULL_ERROR.getDesc());
             }
             if (StringUtils.isNotEmpty(request.getMessage()) && request.getMessage().length() > 2000){
-                return BaseResponse.fail(ResultEnum.ILLEGAL_CHARACTERS_ERROR.getCode(), ResultEnum.ILLEGAL_CHARACTERS_ERROR.getDesc());
+                return BaseResponse.fail(MiscResultEnum.ILLEGAL_CHARACTERS_ERROR.getCode(), MiscResultEnum.ILLEGAL_CHARACTERS_ERROR.getDesc());
             }
             if (StringUtils.isEmpty(request.getCountry())){
-                return BaseResponse.fail(ResultEnum.COUNTRY_NOT_NULL_ERROR.getCode(), ResultEnum.COUNTRY_NOT_NULL_ERROR.getDesc());
+                return BaseResponse.fail(MiscResultEnum.COUNTRY_NOT_NULL_ERROR.getCode(), MiscResultEnum.COUNTRY_NOT_NULL_ERROR.getDesc());
             }
 
             if (StringUtils.isNotEmpty(request.getCountry()) && request.getCountry().length() > 60){
-                return BaseResponse.fail(ResultEnum.ILLEGAL_CHARACTERS_ERROR.getCode(), ResultEnum.ILLEGAL_CHARACTERS_ERROR.getDesc());
+                return BaseResponse.fail(MiscResultEnum.ILLEGAL_CHARACTERS_ERROR.getCode(), MiscResultEnum.ILLEGAL_CHARACTERS_ERROR.getDesc());
             }
             if (StringUtils.isNotEmpty(request.getPostCode()) && request.getPostCode().length() > 60){
-                return BaseResponse.fail(ResultEnum.ILLEGAL_CHARACTERS_ERROR.getCode(), ResultEnum.ILLEGAL_CHARACTERS_ERROR.getDesc());
+                return BaseResponse.fail(MiscResultEnum.ILLEGAL_CHARACTERS_ERROR.getCode(), MiscResultEnum.ILLEGAL_CHARACTERS_ERROR.getDesc());
             }
 
 

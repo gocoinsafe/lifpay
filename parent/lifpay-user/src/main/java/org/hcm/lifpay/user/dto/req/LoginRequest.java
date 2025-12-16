@@ -12,8 +12,14 @@ import org.hcm.lifpay.common.BaseRequest;
 @ToString(callSuper = true)
 public class LoginRequest extends BaseRequest {
 
-    @ApiModelProperty(value = "用户名")
-    String username;
+    @ApiModelProperty(value = "email/phone")
+    String contact;
+
+    @ApiModelProperty(value = "消息类型：0-邮箱，1-手机号")
+    Integer type;
+
+    @ApiModelProperty(value = "验证码")
+    String verifyCode;
 
     @ApiModelProperty(value = "密码")
     String password;

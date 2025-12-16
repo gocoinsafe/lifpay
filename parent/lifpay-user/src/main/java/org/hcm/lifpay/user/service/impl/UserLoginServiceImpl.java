@@ -6,6 +6,10 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.hcm.lifpay.common.BaseResponse;
 import org.hcm.lifpay.common.Constants;
+import org.hcm.lifpay.common.DigitalResultEnum;
+import org.hcm.lifpay.misc.MiscClient;
+import org.hcm.lifpay.misc.req.InnerGetVerifyCodeReq;
+import org.hcm.lifpay.misc.resp.GetVerifyCodeResp;
 import org.hcm.lifpay.redis.RedisDBKey;
 import org.hcm.lifpay.redis.RedisDS;
 import org.hcm.lifpay.user.dao.entity.UserInfoDo;
@@ -14,7 +18,7 @@ import org.hcm.lifpay.user.dto.UserResultEnum;
 import org.hcm.lifpay.user.dto.req.LoginRequest;
 import org.hcm.lifpay.user.dto.resp.LoginResponse;
 import org.hcm.lifpay.user.exception.LifpayException;
-import org.hcm.lifpay.user.service.LoginService;
+import org.hcm.lifpay.user.service.UserLoginService;
 import org.hcm.lifpay.util.AESCBCUtils;
 import org.hcm.lifpay.util.RSASignature;
 import org.hcm.lifpay.util.SensitiveInfoUtil;
@@ -38,13 +42,17 @@ import javax.servlet.http.HttpServletResponse;
 @Service
 @Slf4j
 @RefreshScope
-public class LoginServiceImpl implements LoginService {
+public class UserLoginServiceImpl implements UserLoginService {
 
-    private final static Logger logger = LoggerFactory.getLogger(LoginServiceImpl.class);
+    private final static Logger logger = LoggerFactory.getLogger(UserLoginServiceImpl.class);
 
 
     @Autowired
     private UserInfoRepository userInfoRepository;
+
+
+    @Autowired
+    protected MiscClient miscClientService;
 
 
     private static final String PASSWORD = "password";
@@ -93,7 +101,7 @@ public class LoginServiceImpl implements LoginService {
         BaseResponse<LoginResponse> response = new BaseResponse<>();
 
         try {
-            if (StringUtils.isEmpty(request.getUsername()) || StringUtils.isEmpty(request.getPassword())) {
+            if (StringUtils.isEmpty(request.getContact()) || StringUtils.isEmpty(request.getPassword())) {
                 throw new LifpayException(UserResultEnum.BAD_INPUT.getCode(), UserResultEnum.BAD_INPUT.getMsg());
             }
             String aesKey = request.getAesKey().substring(0, 16);
@@ -108,7 +116,19 @@ public class LoginServiceImpl implements LoginService {
             String localEncPwd = SensitiveInfoUtil.encrypt(plainPwd, sensitiveCipherKey);
             logger.info("codeMap: {}", JSONObject.toJSONString(codeMap));
 
-            String decUserName = SensitiveInfoUtil.apiDecrypt(request.getUsername(), request.getAesKey());
+            // 获取短信验证码 进行验证
+            InnerGetVerifyCodeReq verifyCodeReq = new InnerGetVerifyCodeReq();
+            verifyCodeReq.setContact(request.getContact());
+            verifyCodeReq.setType(request.getType());
+            verifyCodeReq.setVerifyCode(request.getVerifyCode());
+
+            BaseResponse<GetVerifyCodeResp> miscResp = miscClientService.getVerifyCode(verifyCodeReq);
+            if (DigitalResultEnum.SUCCESS.getCode() == miscResp.getCode()){
+
+            }
+
+
+            String decUserName = SensitiveInfoUtil.apiDecrypt(request.getContact(), request.getAesKey());
             QueryWrapper<UserInfoDo> queryWrapper = new QueryWrapper<>();
             queryWrapper.lambda()
                     .eq(UserInfoDo::getName, decUserName)
@@ -119,15 +139,15 @@ public class LoginServiceImpl implements LoginService {
                         UserResultEnum.BAD_COMBINATION.getMsg());
             }
             LoginResponse loginResponse = new LoginResponse();
-//            loginResponse.setUserId(user.getId());
-//            loginResponse.setUsername(user.getUserName());
+            loginResponse.setUserId(user.getId());
+            loginResponse.setUsername(user.getLoginName());
             // 缓存token
             String token = getToken(user.getId(), user.getName(), publicKey);
             // 缓存refresh token
-//            String refreshToken = generateRefreshToken(user.getId(), user.getUserName(), publicKey);
+            String refreshToken = generateRefreshToken(user.getId(), user.getName(), publicKey);
             // 缓存用户信息
-//            cacheUserInfo(user);
-//            loginResponse.setRefreshToken(refreshToken);
+            cacheUserInfo(user);
+            loginResponse.setRefreshToken(refreshToken);
             response.setData(loginResponse);
             //放token到cookie
             httpServletResponse.addCookie(createCookie(Constants.TOKEN_NAME, "", -1, domain, true));
