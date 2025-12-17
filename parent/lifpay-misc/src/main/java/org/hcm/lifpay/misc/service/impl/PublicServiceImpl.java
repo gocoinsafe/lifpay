@@ -10,6 +10,7 @@ import org.apache.xmlbeans.impl.tool.CodeGenUtil;
 import org.bouncycastle.util.encoders.Hex;
 import org.hcm.lifpay.common.BaseResponse;
 import org.hcm.lifpay.misc.common.MiscResultEnum;
+import org.hcm.lifpay.misc.common.SmsCodeStatusEnum;
 import org.hcm.lifpay.misc.constant.VerifyCodeTypeEnum;
 import org.hcm.lifpay.misc.dao.entity.VerifyCodeDo;
 import org.hcm.lifpay.misc.dao.repository.VerifyCodeRepository;
@@ -82,8 +83,7 @@ public class PublicServiceImpl extends ServiceImpl<VerifyCodeRepository, VerifyC
                 // 调用短信发送（复用单例client，性能优化）
                 SendSmsResponse sendSmsResponse = smsProvider.buildSMSRequest(req.getContact(), verifyCode);
                 verifyCodeDo.setType(VerifyCodeTypeEnum.PHONE.getType());
-                verifyCodeDo.setRequestId(sendSmsResponse.getRequestId());
-                verifyCodeDo.setResultJson(Arrays.toString(sendSmsResponse.getSendStatusSet()));
+                verifyCodeDo.setArea(req.getArea());
 
             } catch (IllegalArgumentException e) {
                 logger.error("参数错误：{}", e.getMessage());
@@ -96,6 +96,7 @@ public class PublicServiceImpl extends ServiceImpl<VerifyCodeRepository, VerifyC
                 return BaseResponse.fail(MiscResultEnum.SYSTEM_BUSY.getCode(), "系统异常，请稍后重试");
             }
         }else if (VerifyCodeTypeEnum.EMAIL.getType().equals(req.getType())){
+            // 发送邮件 验证码
 
         }else {
             response.setMessage("暂不支持邮箱、手机号以外的类型！");
@@ -103,7 +104,7 @@ public class PublicServiceImpl extends ServiceImpl<VerifyCodeRepository, VerifyC
 
         verifyCodeDo.setContact(req.getContact());
         verifyCodeDo.setVerifyCode(verifyCode);
-        verifyCodeDo.setStatus(0);
+        verifyCodeDo.setStatus(SmsCodeStatusEnum.NOT_USED.getCode());
         verifyCodeDo.setCreateTime(System.currentTimeMillis());
         verifyCodeDo.setUpdateTime(System.currentTimeMillis());
         // 4. 保存验证码

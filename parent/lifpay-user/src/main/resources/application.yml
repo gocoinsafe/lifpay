@@ -1,6 +1,10 @@
 server:
   port: 9005
 spring:
+  mvc:
+    pathmatch:
+      matching-strategy: ant_path_matcher
+
   application:
     name: lifpay-user
   datasource:
@@ -60,7 +64,8 @@ spring:
 
 
 
-
+swagger:
+  enable: true
 
 system:
   sensitiveCipherKey: LifpaySensitiveDataCipherKey

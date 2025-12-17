@@ -44,6 +44,7 @@ public class SmsServiceImpl implements SmsService {
 //                    return result;
 //                }
 //            }
+            // 根据邮箱或者手机号 查询验证码
             LambdaQueryWrapper<VerifyCodeDo> queryWrapper = new LambdaQueryWrapper<VerifyCodeDo>()
                     .eq(VerifyCodeDo:: getContact, request.getContact())
                     .eq(VerifyCodeDo:: getType, request.getType())

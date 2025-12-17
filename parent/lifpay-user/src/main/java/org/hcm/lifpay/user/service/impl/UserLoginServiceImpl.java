@@ -51,8 +51,8 @@ public class UserLoginServiceImpl implements UserLoginService {
     private UserInfoRepository userInfoRepository;
 
 
-    @Autowired
-    protected MiscClient miscClientService;
+//    @Autowired
+//    protected MiscClient miscClientService;
 
 
     private static final String PASSWORD = "password";
@@ -122,10 +122,10 @@ public class UserLoginServiceImpl implements UserLoginService {
             verifyCodeReq.setType(request.getType());
             verifyCodeReq.setVerifyCode(request.getVerifyCode());
 
-            BaseResponse<GetVerifyCodeResp> miscResp = miscClientService.getVerifyCode(verifyCodeReq);
-            if (DigitalResultEnum.SUCCESS.getCode() == miscResp.getCode()){
-
-            }
+//            BaseResponse<GetVerifyCodeResp> miscResp = miscClientService.getVerifyCode(verifyCodeReq);
+//            if (DigitalResultEnum.SUCCESS.getCode() == miscResp.getCode()){
+//
+//            }
 
 
             String decUserName = SensitiveInfoUtil.apiDecrypt(request.getContact(), request.getAesKey());
@@ -380,7 +380,7 @@ public class UserLoginServiceImpl implements UserLoginService {
 
         // ========= 4. 构造LoginRequest =========
         LoginRequest req = new LoginRequest();
-        req.setUsername(RSASignature.doEncrypt("testUser", RSA_PUBLIC_KEY)); // 用户名加密（示例）
+//        req.setUsername(RSASignature.doEncrypt("testUser", RSA_PUBLIC_KEY)); // 用户名加密（示例）
         req.setPassword(reqPassword); // 关键：使用&拼接的密文
         req.setAesKey(AES_KEY);
         req.setPrivateContent(privateContent);
