@@ -37,4 +37,13 @@ public class RedisDBKey {
      */
     public static final String GET_USER_ID_BY_REFRESH_TOKEN = "user:refresh_token:%s";
 
+    /**
+     * 根据adminUserId查用户信息
+     */
+    public static final String USER_INFO = "user:id:%s:userinfo";
+
+    public static String getAdminUserInfoKey(Long userId){
+        return String.format(RedisDBKey.USER_INFO, userId);
+    }
+
 }
