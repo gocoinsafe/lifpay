@@ -116,20 +116,20 @@ public class ECUtil {
         return null;
     }
 
-    public static byte[] getPubKeyFromPrvKey(byte[] prvKey, String curve) {
-        return getPubKeyFromPrvKey(prvKey, false, curve);
-    }
-
-    public static byte[] getPubKeyFromPrvKey(byte[] prvKey, boolean compressed, String curve) {
-        try {
-            ECPoint point = getEcPointFromPrvKey(prvKey, curve);
-            org.bouncycastle.math.ec.ECPoint bcEcPoint = EC5Util.convertPoint(getParamSpec(curve).getCurve(), point);
-            return bcEcPoint.getEncoded(compressed);
-        } catch (Exception e) {
-            log.error("Fail:", e);
-        }
-        return null;
-    }
+//    public static byte[] getPubKeyFromPrvKey(byte[] prvKey, String curve) {
+//        return getPubKeyFromPrvKey(prvKey, false, curve);
+//    }
+//
+//    public static byte[] getPubKeyFromPrvKey(byte[] prvKey, boolean compressed, String curve) {
+//        try {
+//            ECPoint point = getEcPointFromPrvKey(prvKey, curve);
+//            org.bouncycastle.math.ec.ECPoint bcEcPoint = EC5Util.convertPoint(getParamSpec(curve).getCurve(), point);
+//            return bcEcPoint.getEncoded(compressed);
+//        } catch (Exception e) {
+//            log.error("Fail:", e);
+//        }
+//        return null;
+//    }
 
     public static KeyPair genKeyPairByPrvKey(byte[] prvKey, String curve) {
         try {
