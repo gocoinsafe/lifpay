@@ -52,6 +52,7 @@
 
         <nacos.cloud.version>2021.0.4.0</nacos.cloud.version>
         <spring-cloud-alibaba.version>2021.0.4.0</spring-cloud-alibaba.version>
+        <bootstrap.cloud.version>3.0.3</bootstrap.cloud.version>
 
         <lifpay-core.version>1.0-SNAPSHOT</lifpay-core.version>
         <lifpay-misc.version>1.0-SNAPSHOT</lifpay-misc.version>
@@ -134,6 +135,12 @@
                 <groupId>com.alibaba.cloud</groupId>
                 <artifactId>spring-cloud-starter-alibaba-nacos-discovery</artifactId>
                 <version>${nacos.cloud.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.springframework.cloud</groupId>
+                <artifactId>spring-cloud-starter-bootstrap</artifactId>
+                <version>${bootstrap.cloud.version}</version>
             </dependency>
 
 
