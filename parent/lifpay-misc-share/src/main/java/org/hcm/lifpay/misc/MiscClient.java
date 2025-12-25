@@ -17,7 +17,7 @@ import javax.validation.Valid;
  *
  * @author xinzhe
  */
-@FeignClient(value = "lifpay-misc", configuration = ServiceFeignConfiguration.class)
+@FeignClient
 public interface MiscClient {
 
 

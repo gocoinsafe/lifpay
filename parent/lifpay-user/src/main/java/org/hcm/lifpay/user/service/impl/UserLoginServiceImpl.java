@@ -2,6 +2,7 @@ package org.hcm.lifpay.user.service.impl;
 
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.crypto.digest.BCrypt;
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
@@ -24,6 +25,7 @@ import org.hcm.lifpay.user.dto.UserResultEnum;
 import org.hcm.lifpay.user.dto.req.LoginRequest;
 import org.hcm.lifpay.user.dto.resp.LoginResponse;
 import org.hcm.lifpay.user.exception.LifpayException;
+import org.hcm.lifpay.user.remote.MiscRemoteService;
 import org.hcm.lifpay.user.service.UserLoginService;
 import org.hcm.lifpay.util.AESCBCUtils;
 import org.hcm.lifpay.util.RSASignature;
@@ -60,7 +62,7 @@ public class UserLoginServiceImpl implements UserLoginService {
 
 
     @Autowired
-    protected MiscClient miscClientService;
+    protected MiscRemoteService miscRemoteService;
 
 
     private static final String PASSWORD = "password";
@@ -148,9 +150,10 @@ public class UserLoginServiceImpl implements UserLoginService {
             verifyCodeReq.setType(request.getType());
             verifyCodeReq.setVerifyCode(request.getVerifyCode());
 
-            BaseResponse<GetVerifyCodeResp> miscResp = miscClientService.getVerifyCode(verifyCodeReq);
-            if (DigitalResultEnum.SUCCESS.getCode() == miscResp.getCode()){
-
+            BaseResponse<GetVerifyCodeResp> miscResp = miscRemoteService.getVerifyCode(verifyCodeReq);
+            if (DigitalResultEnum.SUCCESS.getCode() != miscResp.getCode()){
+                logger.info("login.miscResp.resp:{}", JSON.toJSONString(miscResp));
+                return BaseResponse.fail(miscResp.getCode(),miscResp.getMessage());
             }
             // 5. 查询用户（合并查询逻辑）
             LambdaQueryWrapper<UserInfoDo> queryWrapper = new LambdaQueryWrapper<>();
@@ -186,9 +189,9 @@ public class UserLoginServiceImpl implements UserLoginService {
             LoginResponse loginResponse = new LoginResponse();
             loginResponse.setUserId(user.getId());
             loginResponse.setUsername(user.getName());
-            // 缓存token
+            // 缓存token todo: 这里的秘钥需要更换
             String token = getToken(user.getId(), user.getName(), RSA_PUBLIC_KEY);
-            // 缓存refresh token
+            // 缓存refresh token  todo: 这里的秘钥需要更换
             String refreshToken = generateRefreshToken(user.getId(), user.getName(), RSA_PUBLIC_KEY);
             // 缓存用户信息
             cacheUserInfo(user);
