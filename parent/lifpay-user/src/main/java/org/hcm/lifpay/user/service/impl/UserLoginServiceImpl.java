@@ -1,6 +1,9 @@
 package org.hcm.lifpay.user.service.impl;
 
+import cn.hutool.core.collection.CollectionUtil;
+import cn.hutool.crypto.digest.BCrypt;
 import com.alibaba.fastjson.JSONObject;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -8,10 +11,13 @@ import org.hcm.lifpay.common.BaseResponse;
 import org.hcm.lifpay.common.Constants;
 import org.hcm.lifpay.common.DigitalResultEnum;
 import org.hcm.lifpay.misc.MiscClient;
+import org.hcm.lifpay.misc.common.VerifyCodeTypeEnum;
 import org.hcm.lifpay.misc.req.InnerGetVerifyCodeReq;
 import org.hcm.lifpay.misc.resp.GetVerifyCodeResp;
 import org.hcm.lifpay.redis.RedisDBKey;
 import org.hcm.lifpay.redis.RedisDS;
+import org.hcm.lifpay.user.constant.UserStatusEnum;
+import org.hcm.lifpay.user.constant.UserTypeEnum;
 import org.hcm.lifpay.user.dao.entity.UserInfoDo;
 import org.hcm.lifpay.user.dao.repository.UserInfoRepository;
 import org.hcm.lifpay.user.dto.UserResultEnum;
@@ -21,6 +27,7 @@ import org.hcm.lifpay.user.exception.LifpayException;
 import org.hcm.lifpay.user.service.UserLoginService;
 import org.hcm.lifpay.util.AESCBCUtils;
 import org.hcm.lifpay.util.RSASignature;
+import org.hcm.lifpay.util.RegexUtils;
 import org.hcm.lifpay.util.SensitiveInfoUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -31,6 +38,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -51,8 +59,8 @@ public class UserLoginServiceImpl implements UserLoginService {
     private UserInfoRepository userInfoRepository;
 
 
-//    @Autowired
-//    protected MiscClient miscClientService;
+    @Autowired
+    protected MiscClient miscClientService;
 
 
     private static final String PASSWORD = "password";
@@ -98,23 +106,41 @@ public class UserLoginServiceImpl implements UserLoginService {
     @Transactional(rollbackFor = Exception.class)
     public BaseResponse<LoginResponse> login(LoginRequest request, HttpServletResponse httpServletResponse) {
         logger.info("starting to do login verification.");
+        // 1. 参数基础校验
+        if (StringUtils.isEmpty(request.getContact()) || StringUtils.isEmpty(request.getPassword()) ||
+                StringUtils.isEmpty(request.getVerifyCode()) || request.getType() == null) {
+            return BaseResponse.fail(DigitalResultEnum.PARAM_ERROR);
+        }
+
+        // 2. 枚举与联系方式格式校验
+        VerifyCodeTypeEnum typeEnum = VerifyCodeTypeEnum.getByType(request.getType());
+        if (typeEnum == null) {
+            return BaseResponse.fail(DigitalResultEnum.PARAM_ERROR.getCode(), "联系方式类型不合法");
+        }
+//        if (typeEnum == VerifyCodeTypeEnum.PHONE && !RegexUtils.isMobile(request.getContact())) {
+//            return BaseResponse.fail(DigitalResultEnum.PARAM_ERROR.getCode(), "手机号格式错误");
+//        }
+        if (typeEnum == VerifyCodeTypeEnum.EMAIL && !RegexUtils.isEmail(request.getContact())) {
+            return BaseResponse.fail(DigitalResultEnum.PARAM_ERROR.getCode(), "邮箱格式错误");
+        }
+
         BaseResponse<LoginResponse> response = new BaseResponse<>();
 
         try {
             if (StringUtils.isEmpty(request.getContact()) || StringUtils.isEmpty(request.getPassword())) {
-                throw new LifpayException(UserResultEnum.BAD_INPUT.getCode(), UserResultEnum.BAD_INPUT.getMsg());
+                return BaseResponse.fail(DigitalResultEnum.PARAM_ERROR);
             }
-            String aesKey = request.getAesKey().substring(0, 16);
-            // AES解密出RSA私钥
-            String privateKey = decryptPrivateKey(request.getPrivateContent(), aesKey);
-            // RSA解密
-            Map<String, String> codeMap = decryptPublicKey(request.getPassword(), privateKey);
-            // 明文
-            String plainPwd = codeMap.get(PASSWORD);
-            String publicKey = codeMap.get(PUBLIC_KEY);
-            // 本地加密与数据库对比
-            String localEncPwd = SensitiveInfoUtil.encrypt(plainPwd, sensitiveCipherKey);
-            logger.info("codeMap: {}", JSONObject.toJSONString(codeMap));
+//            String aesKey = request.getAesKey().substring(0, 16);
+//            // AES解密出RSA私钥
+//            String privateKey = decryptPrivateKey(request.getPrivateContent(), aesKey);
+//            // RSA解密
+//            Map<String, String> codeMap = decryptPublicKey(request.getPassword(), privateKey);
+//            // 明文
+//            String plainPwd = codeMap.get(PASSWORD);
+//            String publicKey = codeMap.get(PUBLIC_KEY);
+//            // 本地加密与数据库对比
+//            String localEncPwd = SensitiveInfoUtil.encrypt(plainPwd, sensitiveCipherKey);
+//            logger.info("codeMap: {}", JSONObject.toJSONString(codeMap));
 
             // 获取短信验证码 进行验证
             InnerGetVerifyCodeReq verifyCodeReq = new InnerGetVerifyCodeReq();
@@ -122,35 +148,54 @@ public class UserLoginServiceImpl implements UserLoginService {
             verifyCodeReq.setType(request.getType());
             verifyCodeReq.setVerifyCode(request.getVerifyCode());
 
-//            BaseResponse<GetVerifyCodeResp> miscResp = miscClientService.getVerifyCode(verifyCodeReq);
-//            if (DigitalResultEnum.SUCCESS.getCode() == miscResp.getCode()){
-//
-//            }
+            BaseResponse<GetVerifyCodeResp> miscResp = miscClientService.getVerifyCode(verifyCodeReq);
+            if (DigitalResultEnum.SUCCESS.getCode() == miscResp.getCode()){
 
-
-            String decUserName = SensitiveInfoUtil.apiDecrypt(request.getContact(), request.getAesKey());
-            QueryWrapper<UserInfoDo> queryWrapper = new QueryWrapper<>();
-            queryWrapper.lambda()
-                    .eq(UserInfoDo::getName, decUserName)
-                    .eq(UserInfoDo::getPassword, localEncPwd);
-            UserInfoDo user = userInfoRepository.selectOne(queryWrapper);
-            if (null == user) {
-                throw new LifpayException(UserResultEnum.BAD_COMBINATION.getCode(),
-                        UserResultEnum.BAD_COMBINATION.getMsg());
             }
+            // 5. 查询用户（合并查询逻辑）
+            LambdaQueryWrapper<UserInfoDo> queryWrapper = new LambdaQueryWrapper<>();
+            queryWrapper.eq(UserInfoDo:: getStatus,UserStatusEnum.NORMAL.getType());
+            if (typeEnum == VerifyCodeTypeEnum.EMAIL) {
+                queryWrapper.eq(UserInfoDo::getEmail, request.getContact());
+            } else {
+                queryWrapper.eq(UserInfoDo::getTelephone, request.getContact());
+            }
+            UserInfoDo userInfoDo = userInfoRepository.selectOne(queryWrapper);
+            UserInfoDo user;
+
+            // 6. 注册/登录逻辑
+            if (userInfoDo == null) {
+                // 注册（独立事务方法）
+                user = registerUser(request.getContact(), request.getPassword(), request.getType());
+            } else {
+                // 校验用户状态
+                if (UserStatusEnum.FREEZE.getType().equals(userInfoDo.getStatus())) {
+                    return BaseResponse.fail(UserResultEnum.USER_FROZEN.getCode(), UserResultEnum.USER_FROZEN.getMsg());
+                }
+                if (UserStatusEnum.DELETED.getType().equals(userInfoDo.getStatus())) {
+                    return BaseResponse.fail(UserResultEnum.USER_DELETE.getCode(), UserResultEnum.USER_DELETE.getMsg());
+                }
+
+                // 校验密码
+                if (!request.getPassword().equals(userInfoDo.getPassword())) {
+                    return BaseResponse.fail(UserResultEnum.BAD_COMBINATION.getCode(),UserResultEnum.BAD_COMBINATION.getMsg());
+                }
+                user = userInfoDo;
+            }
+
             LoginResponse loginResponse = new LoginResponse();
             loginResponse.setUserId(user.getId());
-            loginResponse.setUsername(user.getLoginName());
+            loginResponse.setUsername(user.getName());
             // 缓存token
-            String token = getToken(user.getId(), user.getName(), publicKey);
+            String token = getToken(user.getId(), user.getName(), RSA_PUBLIC_KEY);
             // 缓存refresh token
-            String refreshToken = generateRefreshToken(user.getId(), user.getName(), publicKey);
+            String refreshToken = generateRefreshToken(user.getId(), user.getName(), RSA_PUBLIC_KEY);
             // 缓存用户信息
             cacheUserInfo(user);
             loginResponse.setRefreshToken(refreshToken);
             response.setData(loginResponse);
             //放token到cookie
-            httpServletResponse.addCookie(createCookie(Constants.TOKEN_NAME, "", -1, domain, true));
+            httpServletResponse.addCookie(createCookie(Constants.TOKEN_NAME, token, -1, domain, true));
             response.setCode(UserResultEnum.SUCCESS.getCode());
             response.setMessage(UserResultEnum.SUCCESS.getMsg());
         } catch (LifpayException e) {
@@ -165,6 +210,29 @@ public class UserLoginServiceImpl implements UserLoginService {
         }
         logger.info("done doing verification");
         return response;
+    }
+
+
+    // 独立的注册事务方法
+    @Transactional(rollbackFor = Exception.class)
+    private UserInfoDo registerUser(String contact, String encryptPwd, Integer type) {
+        UserInfoDo userInfoDo = new UserInfoDo();
+        VerifyCodeTypeEnum typeEnum = VerifyCodeTypeEnum.getByType(type);
+        if (typeEnum == VerifyCodeTypeEnum.EMAIL) {
+            userInfoDo.setEmail(contact);
+        } else {
+            userInfoDo.setTelephone(contact);
+        }
+        // 随机用户名（示例：user_手机号后4位/邮箱前缀）
+        userInfoDo.setName(contact);
+        userInfoDo.setPassword(encryptPwd);
+        userInfoDo.setUserType(UserTypeEnum.PERSON.getType());
+        userInfoDo.setStatus(UserStatusEnum.NORMAL.getType());
+        userInfoDo.setCreateTime(System.currentTimeMillis());
+        userInfoDo.setUpdateTime(userInfoDo.getCreateTime());
+        userInfoRepository.insert(userInfoDo);
+
+        return userInfoDo;
     }
 
     private void cacheUserInfo(UserInfoDo userInfoDo) {

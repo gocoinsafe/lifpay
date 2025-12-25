@@ -6,17 +6,16 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.tencentcloudapi.common.exception.TencentCloudSDKException;
 import com.tencentcloudapi.sms.v20210111.models.SendSmsResponse;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.xmlbeans.impl.tool.CodeGenUtil;
 import org.bouncycastle.util.encoders.Hex;
 import org.hcm.lifpay.common.BaseResponse;
 import org.hcm.lifpay.misc.common.MiscResultEnum;
 import org.hcm.lifpay.misc.common.SmsCodeStatusEnum;
-import org.hcm.lifpay.misc.constant.VerifyCodeTypeEnum;
+import org.hcm.lifpay.misc.common.VerifyCodeTypeEnum;
 import org.hcm.lifpay.misc.dao.entity.VerifyCodeDo;
 import org.hcm.lifpay.misc.dao.repository.VerifyCodeRepository;
 import org.hcm.lifpay.misc.dto.req.GetVerifyCodeReq;
-import org.hcm.lifpay.misc.exception.MiscException;
 import org.hcm.lifpay.misc.providers.SMSProvider;
+import org.hcm.lifpay.misc.service.MailService;
 import org.hcm.lifpay.misc.service.PublicService;
 import org.hcm.lifpay.util.CommonUtil;
 import org.hcm.lifpay.util.HashUtil;
@@ -28,7 +27,6 @@ import org.springframework.cloud.context.config.annotation.RefreshScope;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
-import java.util.Arrays;
 
 
 @Slf4j
@@ -42,11 +40,21 @@ public class PublicServiceImpl extends ServiceImpl<VerifyCodeRepository, VerifyC
     @Autowired
     private VerifyCodeRepository verifyCodeRepository;
 
+    @Autowired
+    private MailService mailService;
+
     @Resource
     private SMSProvider smsProvider;
 
     @Value("${message.sms.workload:00}")
     String workload;
+
+    @Value("${misc.verifyCode.title}")
+    String emailTitle;
+
+    @Value("${misc.verifyCode.content}")
+    String emailContent;
+
 
 
 
@@ -65,10 +73,10 @@ public class PublicServiceImpl extends ServiceImpl<VerifyCodeRepository, VerifyC
         }
 
         // 验证工作量证明随机数
-        boolean powVerify = smsPowVerify(req.getContact(), req.getTimestamp(), req.getRandom());
-        if (!powVerify) {
-            throw new MiscException(MiscResultEnum.INVALID_RANDOM);
-        }
+//        boolean powVerify = smsPowVerify(req.getContact(), req.getTimestamp(), req.getRandom());
+//        if (!powVerify) {
+//            return BaseResponse.fail(MiscResultEnum.INVALID_RANDOM.getCode(),MiscResultEnum.INVALID_RANDOM.getDesc());
+//        }
 
 
         BaseResponse<String> response = new BaseResponse<>();
@@ -96,8 +104,9 @@ public class PublicServiceImpl extends ServiceImpl<VerifyCodeRepository, VerifyC
                 return BaseResponse.fail(MiscResultEnum.SYSTEM_BUSY.getCode(), "系统异常，请稍后重试");
             }
         }else if (VerifyCodeTypeEnum.EMAIL.getType().equals(req.getType())){
+            verifyCodeDo.setType(VerifyCodeTypeEnum.EMAIL.getType());
             // 发送邮件 验证码
-
+            mailService.sendSimpleMail(req.getContact(), emailTitle, emailContent + ":\n\n" + verifyCode);
         }else {
             response.setMessage("暂不支持邮箱、手机号以外的类型！");
         }

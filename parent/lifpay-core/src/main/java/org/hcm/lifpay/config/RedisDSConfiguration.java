@@ -18,13 +18,13 @@ public class RedisDSConfiguration {
     @Value("${spring.redis.port:6379}")
     private int port;
 
-    @Value("${spring.redis.timeout:2000}")
+    @Value("${spring.redis.timeout:3000}")
     private int timeout;
 
-    @Value("${spring.redis.jedis.pool.max-idle:2000}")
+    @Value("${spring.redis.jedis.pool.max-idle:8}")
     private int maxIdle;
 
-    @Value("${spring.redis.jedis.pool.max-wait:2000}")
+    @Value("${spring.redis.jedis.pool.max-wait:3000}")
     private long maxWaitMillis;
 
     @Value("${spring.redis.password:}")

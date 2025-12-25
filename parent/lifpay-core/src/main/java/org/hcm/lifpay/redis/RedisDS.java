@@ -64,9 +64,11 @@ public class RedisDS implements Closeable {
         setting.put("connectionTimeout", String.valueOf(configuration.getTimeout()));
         // 读取超时
         setting.put("soTimeout",  String.valueOf(configuration.getTimeout()));
-        setting.put("password", configuration.getPassword());
+        // 如果密码为空字符串，设置为 null，避免 Redis 尝试 AUTH
+        String password = configuration.getPassword();
+        setting.put("password", StrUtil.isBlank(password) ? null : password);
         setting.put("database", String.valueOf(configuration.getDatabase()));
-        setting.put("clientName", "dab");
+        setting.put("clientName", "lifpay");
         setting.put("ssl", "false");
         return new RedisDS(setting, null);
     }
@@ -140,6 +142,11 @@ public class RedisDS implements Closeable {
             setting.toBean(group, config);
         }
         //# 连接耗尽时是否阻塞, false报异常,ture阻塞直到超时, 默认true
+        // 获取密码，如果为空字符串则转换为 null
+        String password = setting.getStr("password", group, null);
+        if (StrUtil.isBlank(password)) {
+            password = null;
+        }
         this.pool = new JedisPool(config,
                 // 地址
                 setting.getStr("host", group, Protocol.DEFAULT_HOST),
@@ -149,8 +156,8 @@ public class RedisDS implements Closeable {
                 setting.getInt("connectionTimeout", group, setting.getInt("timeout", group, Protocol.DEFAULT_TIMEOUT)),
                 // 读取数据超时
                 setting.getInt("soTimeout", group, setting.getInt("timeout", group, Protocol.DEFAULT_TIMEOUT)),
-                // 密码
-                setting.getStr("password", group, null),
+                // 密码（如果为空字符串则传 null）
+                password,
                 // 数据库序号
                 setting.getInt("database", group, Protocol.DEFAULT_DATABASE),
                 // 客户端名

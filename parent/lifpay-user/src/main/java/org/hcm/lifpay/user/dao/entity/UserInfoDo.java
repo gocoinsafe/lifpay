@@ -56,12 +56,6 @@ public class UserInfoDo extends BaseEntity implements Serializable {
     @TableField("email")
     private String email;
 
-    /**
-     * 登录用户名
-     */
-
-    @TableField("login_name")
-    private String loginName;
 
     /**
      * 登录密码（密文存储）

@@ -1,4 +1,4 @@
-package org.hcm.lifpay.misc.constant;
+package org.hcm.lifpay.user.constant;
 
 
 import lombok.AllArgsConstructor;
@@ -6,11 +6,11 @@ import lombok.Getter;
 
 @Getter
 @AllArgsConstructor
-public enum VerifyCodeTypeEnum {
+public enum UserTypeEnum {
 
 
-    EMAIL(0, "Email", "邮箱"),
-    PHONE(1, "phone", "手机号"),
+    PERSON(0, "person", "个人"),
+    ENTERPRISE(1, "enterprise", "企业"),
     ;
 
     private final Integer type;
@@ -18,5 +18,4 @@ public enum VerifyCodeTypeEnum {
     private final String name;
 
     private final String desc;
-
 }

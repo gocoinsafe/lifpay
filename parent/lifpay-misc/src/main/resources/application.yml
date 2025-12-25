@@ -49,9 +49,9 @@ spring:
     # 2. 端口（SMTP 端口：QQ/163 邮箱 SSL 端口 465；非 SSL 端口 25，但多数服务器禁用 25）
     port: 465
     # 3. 发送者邮箱账号（你的邮箱）
-    username: jerry@lifpay.me
-    # 4. 授权码（⚠️ 不是邮箱登录密码！需要单独申请，见下方说明）
-    password: W5xf3wkUTiFDmSzW
+    username: support@lifpay.me
+    # 4. 授权码
+    password: iXfrvGY7LvuMXuv9
     # 5. 加密方式（SSL 加密，必填，否则连接失败）
     properties:
       mail:
@@ -89,5 +89,8 @@ misc:
     sdkAppId: 2400001156
     signName: LifPay
     templateId: 2929134
+  verifyCode:
+    title: Lifpay verify code
+    content: Watch out for scams. DON'T share this security code with anyone, our employees will never ask for the code. Your Lifpay verification code is
 
 

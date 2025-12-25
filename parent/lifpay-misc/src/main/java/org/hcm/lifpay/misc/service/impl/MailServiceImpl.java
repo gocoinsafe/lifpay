@@ -4,6 +4,7 @@ package org.hcm.lifpay.misc.service.impl;
 import cn.hutool.extra.template.TemplateEngine;
 import org.hcm.lifpay.misc.service.MailService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
@@ -25,7 +26,8 @@ public class MailServiceImpl implements MailService {
     private JavaMailSender mailSender;
 
     // 发送者邮箱（与 application.yml 中配置的 username 一致）
-    private String from = "jerry@lifpay.me"; // 可在 yml 中配置：spring.mail.from=你的邮箱@qq.com，然后通过 @Value("${spring.mail.from}") 注入
+    @Value("${spring.mail.username: support@lifpay.me}")
+    private String from; // 可在 yml 中配置：spring.mail.from=你的邮箱@qq.com，然后通过 @Value("${spring.mail.from}") 注入
 
     // 可选：Thymeleaf 模板引擎（用于发送 HTML 模板邮件）
 //    @Autowired(required = false)

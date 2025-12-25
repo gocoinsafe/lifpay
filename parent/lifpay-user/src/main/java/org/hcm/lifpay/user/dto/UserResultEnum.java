@@ -27,6 +27,8 @@ public enum UserResultEnum {
     DELETE_CONTACT_USER_ERR(9016, "联系人不存在，请确认后再试"),
     DELETE_CONTACT_USER_SUCCESS(9017, "删除联系人成功"),
     DELETE_CONTACT_USER_EXCEPTION_ERR(9018, "删除联系人异常"),
+    USER_FROZEN(9019, "用户已被冻结"),
+    USER_DELETE(9020, "用户已被注销"),
 
 
 
