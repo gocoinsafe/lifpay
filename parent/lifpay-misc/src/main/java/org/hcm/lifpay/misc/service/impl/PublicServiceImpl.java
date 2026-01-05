@@ -73,7 +73,7 @@ public class PublicServiceImpl extends ServiceImpl<VerifyCodeRepository, VerifyC
         }
 
         // 验证工作量证明随机数
-//        boolean powVerify = smsPowVerify(req.getContact(), req.getTimestamp(), req.getRandom());
+        boolean powVerify = smsPowVerify(req.getContact(), req.getTimestamp(), req.getRandom());
 //        if (!powVerify) {
 //            return BaseResponse.fail(MiscResultEnum.INVALID_RANDOM.getCode(),MiscResultEnum.INVALID_RANDOM.getDesc());
 //        }
