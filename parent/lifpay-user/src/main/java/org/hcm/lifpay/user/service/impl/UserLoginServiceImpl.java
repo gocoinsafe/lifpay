@@ -8,6 +8,7 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.hcm.lifpay.common.BaseRequest;
 import org.hcm.lifpay.common.BaseResponse;
 import org.hcm.lifpay.common.Constants;
 import org.hcm.lifpay.common.DigitalResultEnum;
@@ -22,8 +23,10 @@ import org.hcm.lifpay.user.constant.UserTypeEnum;
 import org.hcm.lifpay.user.dao.entity.UserInfoDo;
 import org.hcm.lifpay.user.dao.repository.UserInfoRepository;
 import org.hcm.lifpay.user.dto.UserResultEnum;
+import org.hcm.lifpay.user.dto.req.IncludePkRequest;
 import org.hcm.lifpay.user.dto.req.LoginRequest;
 import org.hcm.lifpay.user.dto.resp.LoginResponse;
+import org.hcm.lifpay.user.dto.resp.UserInfoResp;
 import org.hcm.lifpay.user.exception.LifpayException;
 import org.hcm.lifpay.user.remote.MiscRemoteService;
 import org.hcm.lifpay.user.service.UserLoginService;
@@ -61,8 +64,8 @@ public class UserLoginServiceImpl implements UserLoginService {
     private UserInfoRepository userInfoRepository;
 
 
-    @Autowired
-    protected MiscRemoteService miscRemoteService;
+//    @Autowired
+//    protected MiscRemoteService miscRemoteService;
 
 
     private static final String PASSWORD = "password";
@@ -150,11 +153,11 @@ public class UserLoginServiceImpl implements UserLoginService {
             verifyCodeReq.setType(request.getType());
             verifyCodeReq.setVerifyCode(request.getVerifyCode());
 
-            BaseResponse<GetVerifyCodeResp> miscResp = miscRemoteService.getVerifyCode(verifyCodeReq);
-            if (DigitalResultEnum.SUCCESS.getCode() != miscResp.getCode()){
-                logger.info("login.miscResp.resp:{}", JSON.toJSONString(miscResp));
-                return BaseResponse.fail(miscResp.getCode(),miscResp.getMessage());
-            }
+//            BaseResponse<GetVerifyCodeResp> miscResp = miscRemoteService.getVerifyCode(verifyCodeReq);
+//            if (DigitalResultEnum.SUCCESS.getCode() != miscResp.getCode()){
+//                logger.info("login.miscResp.resp:{}", JSON.toJSONString(miscResp));
+//                return BaseResponse.fail(miscResp.getCode(),miscResp.getMessage());
+//            }
             // 5. 查询用户（合并查询逻辑）
             LambdaQueryWrapper<UserInfoDo> queryWrapper = new LambdaQueryWrapper<>();
             queryWrapper.eq(UserInfoDo:: getStatus,UserStatusEnum.NORMAL.getType());
@@ -193,6 +196,7 @@ public class UserLoginServiceImpl implements UserLoginService {
             String token = getToken(user.getId(), user.getName(), RSA_PUBLIC_KEY);
             // 缓存refresh token  todo: 这里的秘钥需要更换
             String refreshToken = generateRefreshToken(user.getId(), user.getName(), RSA_PUBLIC_KEY);
+            loginResponse.setToken(token);
             // 缓存用户信息
             cacheUserInfo(user);
             loginResponse.setRefreshToken(refreshToken);
@@ -215,6 +219,42 @@ public class UserLoginServiceImpl implements UserLoginService {
         return response;
     }
 
+
+    @Override
+    public void logout(BaseRequest request, HttpServletResponse httpServletResponse) {
+        logout(request.getUserId().toString(), request.getDeviceId());
+        httpServletResponse.addCookie(createCookie(Constants.TOKEN_NAME, null, 0, "", false));
+    }
+
+    @Override
+    public BaseResponse<UserInfoResp> getUserInfo(IncludePkRequest req) {
+        logger.info("getUserInfo.req:{}",JSON.toJSONString(req));
+        BaseResponse<UserInfoResp> userBaseResponse = new BaseResponse();
+
+        UserInfoResp userInfo = new UserInfoResp();
+        UserInfoDo userInfoDO = userInfoRepository.selectById(req.getUserId());
+        if (null != userInfoDO){
+            userInfo.setUserId(userInfoDO.getId());
+            userInfo.setUsername(userInfoDO.getName());
+            userInfo.setEmail(userInfoDO.getEmail());
+            userInfo.setTelephone(userInfoDO.getTelephone());
+            userInfo.setStatus(userInfoDO.getStatus());
+            userInfo.setIconUrl(userInfoDO.getIconUrl());
+            userInfo.setUserType(userInfoDO.getUserType());
+            userInfo.setCreateTime(userInfoDO.getCreateTime());
+        }
+
+        userBaseResponse.setData(userInfo);
+        return userBaseResponse;
+    }
+
+    public void logout(String userId, String oldDeviceId){
+        if (StringUtils.isEmpty(oldDeviceId) && StringUtils.isEmpty(userId)) {
+            throw new LifpayException(UserResultEnum.BAD_INPUT);
+        }
+        removeToken(userId, oldDeviceId);
+        removeRefreshToken(userId, oldDeviceId);
+    }
 
     // 独立的注册事务方法
     @Transactional(rollbackFor = Exception.class)
@@ -328,6 +368,37 @@ public class UserLoginServiceImpl implements UserLoginService {
         }
         return privateKey;
     }
+
+
+    protected long removeToken(String userId, String deviceId) {
+        log.info("start to remove token from Redis, userId={}, deviceId={}", userId, deviceId);
+        String key = getTokenKey(userId, deviceId);
+        String token = redisDS.getStr(key);
+        long rs = 0;
+        if (null != token) {
+            String tokenKey = String.format(RedisDBKey.GET_USER_ID_BY_TOKEN, token);
+            rs = redisDS.del(key);
+            rs += redisDS.del(tokenKey);
+        }
+        log.info("user {} token removed {}", key, token);
+        return rs;
+    }
+
+    protected long removeRefreshToken(String userId, String deviceId) {
+        log.info("start to remove refresh token from Redis, userId={}, deviceId={}", userId, deviceId);
+        String key = getRefreshTokenKey(userId, deviceId);
+        String token = redisDS.getStr(key);
+        long rs = 0;
+        if (null != token) {
+            String tokenKey = String.format(RedisDBKey.GET_USER_ID_BY_REFRESH_TOKEN, token);
+            rs = redisDS.del(key);
+            rs += redisDS.del(tokenKey);
+        }
+        log.info("user {} refresh token removed {}", key, token);
+        return rs;
+    }
+
+
 //
 //    /**
 //     * //从redis获取refresh_token
