@@ -48,6 +48,25 @@ public class ECUtil {
         return null;
     }
 
+    public static void main(String[] args) {
+        // 方式1：使用类常量（推荐，避免硬编码错误）
+//        KeyPair keyPair1 = ECUtil.genKeyPair(ECUtil.SECP256K1);
+//        KeyPair keyPair2 = ECUtil.genKeyPair(ECUtil.SECP256R1);
+
+        // 方式2：直接传入字符串（不推荐，易拼错）
+        KeyPair keyPair3 = ECUtil.genKeyPair(SECP256R1);
+
+        // 注意：genKeyPair异常时返回null，建议判空
+        if (keyPair3 != null) {
+            PublicKey publicKey = keyPair3.getPublic();  // 获取公钥
+            PrivateKey privateKey = keyPair3.getPrivate();// 获取私钥
+            System.out.println("生成的公钥：" + Hex.toHexString(ECUtil.convertPubKey(publicKey, ECUtil.SECP256R1)));
+            System.out.println("生成的私钥：" + Hex.toHexString(ECUtil.convertPrvKey(privateKey)));
+        } else {
+            System.out.println("密钥对生成失败");
+        }
+    }
+
     public static PrivateKey convertPrvKey(byte[] prvKey, String curve) {
         try {
             KeyFactory keyFactory = KeyFactory.getInstance("EC", "BC");

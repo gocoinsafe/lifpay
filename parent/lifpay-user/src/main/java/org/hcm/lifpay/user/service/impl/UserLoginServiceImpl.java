@@ -30,10 +30,7 @@ import org.hcm.lifpay.user.dto.resp.UserInfoResp;
 import org.hcm.lifpay.user.exception.LifpayException;
 import org.hcm.lifpay.user.remote.MiscRemoteService;
 import org.hcm.lifpay.user.service.UserLoginService;
-import org.hcm.lifpay.util.AESCBCUtils;
-import org.hcm.lifpay.util.RSASignature;
-import org.hcm.lifpay.util.RegexUtils;
-import org.hcm.lifpay.util.SensitiveInfoUtil;
+import org.hcm.lifpay.util.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -135,17 +132,18 @@ public class UserLoginServiceImpl implements UserLoginService {
             if (StringUtils.isEmpty(request.getContact()) || StringUtils.isEmpty(request.getPassword())) {
                 return BaseResponse.fail(DigitalResultEnum.PARAM_ERROR);
             }
-//            String aesKey = request.getAesKey().substring(0, 16);
-//            // AES解密出RSA私钥
-//            String privateKey = decryptPrivateKey(request.getPrivateContent(), aesKey);
-//            // RSA解密
-//            Map<String, String> codeMap = decryptPublicKey(request.getPassword(), privateKey);
-//            // 明文
-//            String plainPwd = codeMap.get(PASSWORD);
-//            String publicKey = codeMap.get(PUBLIC_KEY);
-//            // 本地加密与数据库对比
-//            String localEncPwd = SensitiveInfoUtil.encrypt(plainPwd, sensitiveCipherKey);
-//            logger.info("codeMap: {}", JSONObject.toJSONString(codeMap));
+            String aesKey = request.getAesKey().substring(0, 16);
+            // AES解密出RSA私钥
+            String privateKey = decryptPrivateKey(request.getPrivateContent(), aesKey);
+            // RSA解密
+            Map<String, String> codeMap = decryptPublicKey(request.getPassword(), privateKey);
+            // 明文
+            String plainPwd = codeMap.get(PASSWORD);
+            String publicKey = codeMap.get(PUBLIC_KEY);
+            logger.info("login.plainPwd:{}, publicKey:{}", plainPwd, publicKey);
+            // 本地加密与数据库对比
+            String localEncPwd = SensitiveInfoUtil.encrypt(plainPwd, sensitiveCipherKey);
+            logger.info("codeMap: {}", JSONObject.toJSONString(codeMap));
 
             // 获取短信验证码 进行验证
             InnerGetVerifyCodeReq verifyCodeReq = new InnerGetVerifyCodeReq();
@@ -172,7 +170,7 @@ public class UserLoginServiceImpl implements UserLoginService {
             // 6. 注册/登录逻辑
             if (userInfoDo == null) {
                 // 注册（独立事务方法）
-                user = registerUser(request.getContact(), request.getPassword(), request.getType());
+                user = registerUser(request.getContact(), plainPwd, request.getType());
             } else {
                 // 校验用户状态
                 if (UserStatusEnum.FREEZE.getType().equals(userInfoDo.getStatus())) {
@@ -183,7 +181,7 @@ public class UserLoginServiceImpl implements UserLoginService {
                 }
 
                 // 校验密码
-                if (!request.getPassword().equals(userInfoDo.getPassword())) {
+                if (!plainPwd.equals(userInfoDo.getPassword())) {
                     return BaseResponse.fail(UserResultEnum.BAD_COMBINATION.getCode(),UserResultEnum.BAD_COMBINATION.getMsg());
                 }
                 user = userInfoDo;
@@ -192,17 +190,17 @@ public class UserLoginServiceImpl implements UserLoginService {
             LoginResponse loginResponse = new LoginResponse();
             loginResponse.setUserId(user.getId());
             loginResponse.setUsername(user.getName());
-            // 缓存token todo: 这里的秘钥需要更换
-            String token = getToken(user.getId(), user.getName(), RSA_PUBLIC_KEY);
-            // 缓存refresh token  todo: 这里的秘钥需要更换
-            String refreshToken = generateRefreshToken(user.getId(), user.getName(), RSA_PUBLIC_KEY);
+            // 缓存token
+            String token = getToken(user.getId(), user.getName(), publicKey);
+            // 缓存refresh token
+            String refreshToken = generateRefreshToken(user.getId(), user.getName(), publicKey);
             loginResponse.setToken(token);
             // 缓存用户信息
             cacheUserInfo(user);
             loginResponse.setRefreshToken(refreshToken);
             response.setData(loginResponse);
             //放token到cookie
-            httpServletResponse.addCookie(createCookie(Constants.TOKEN_NAME, token, -1, domain, true));
+//            httpServletResponse.addCookie(createCookie(Constants.TOKEN_NAME, token, -1, domain, true));
             response.setCode(UserResultEnum.SUCCESS.getCode());
             response.setMessage(UserResultEnum.SUCCESS.getMsg());
         } catch (LifpayException e) {
@@ -263,11 +261,13 @@ public class UserLoginServiceImpl implements UserLoginService {
         VerifyCodeTypeEnum typeEnum = VerifyCodeTypeEnum.getByType(type);
         if (typeEnum == VerifyCodeTypeEnum.EMAIL) {
             userInfoDo.setEmail(contact);
+            // 随机用户名（示例：user_手机号后4位/邮箱前缀）
+            userInfoDo.setName(RegularExpressionUtil.extractEmailPrefix(contact));
         } else {
             userInfoDo.setTelephone(contact);
+            userInfoDo.setName(RegularExpressionUtil.extractMobileLast4(contact));
         }
-        // 随机用户名（示例：user_手机号后4位/邮箱前缀）
-        userInfoDo.setName(contact);
+
         userInfoDo.setPassword(encryptPwd);
         userInfoDo.setUserType(UserTypeEnum.PERSON.getType());
         userInfoDo.setStatus(UserStatusEnum.NORMAL.getType());
@@ -335,7 +335,7 @@ public class UserLoginServiceImpl implements UserLoginService {
         return String.format(RedisDBKey.GET_USERNAME_BY_USERID, userId);
     }
 
-    private Map<String, String> decryptPublicKey(String reqCode, String privateKey) {
+    private static Map<String, String> decryptPublicKey(String reqCode, String privateKey) {
         Map<String, String> map = new HashMap<>(2);
         String decPart1;
         String decPart2;
@@ -359,7 +359,7 @@ public class UserLoginServiceImpl implements UserLoginService {
         return map;
     }
 //
-    private String decryptPrivateKey(String privateContent, String aesKey) {
+    private static String decryptPrivateKey(String privateContent, String aesKey) {
         String privateStr = AESCBCUtils.decrypt(privateContent, aesKey);
         String privateKey = privateStr.split("&&")[0];
         if (privateKey == null) {
@@ -492,10 +492,13 @@ public class UserLoginServiceImpl implements UserLoginService {
     }
 
 
+    public static void main(String[] args) throws Exception {
+        testLoginEncryptDecrypt();
+    }
 
-    public void testLoginEncryptDecrypt() throws Exception {
+    public static void testLoginEncryptDecrypt() throws Exception {
         // ========= 1. 模拟前端准备数据 =========
-        String clientPublicKey = "client_public_key_xxx"; // 客户端生成的公钥（示例）
+        String clientPublicKey = ""; // 前端自己生成的椭圆曲线的公钥
         String plainPassword = "123456"; // 明文密码
 
         // 关键：按后端预期拆分数据为两部分（这里简单按长度拆分，实际前端需保持一致）
@@ -503,7 +506,7 @@ public class UserLoginServiceImpl implements UserLoginService {
         String passwordPart1 = plainPassword.substring(0, splitIndex); // 密码前半段
         String passwordPart2 = plainPassword.substring(splitIndex);     // 密码后半段
 
-        // part1明文 = 客户端公钥 + "&" + 密码前半段（后端解密后需要提取publicKey）
+        // part1明文 =rsa公钥 + "&" + 密码前半段（后端解密后需要提取publicKey）
         String part1Plain = clientPublicKey + "&" + passwordPart1;
         // part2明文 = 密码后半段
         String part2Plain = passwordPart2;
@@ -513,7 +516,10 @@ public class UserLoginServiceImpl implements UserLoginService {
         String part2Enc = RSASignature.doEncrypt(part2Plain, RSA_PUBLIC_KEY); // 加密part2
 
         // 前端传入的password = 两部分密文用&拼接（核心修正点）
-        String reqPassword = part1Enc + "&" + part2Enc;
+        String reqPasswordtt = part1Enc + "&" + part2Enc;
+        logger.info(reqPasswordtt);
+
+        String reqPassword = "KsBcvg1iLhsBUWR15WwukBTHhzcA2kpQMKqNBxgYyocg0kbDJbGtSha6BXR6bReU2PZDLa6ItePz2UONqn1E/+GkNx6660E4dSePZx+h+wrmdJZ27ZtYOpgGrn6MqrnhV7ScP4IeGQN/sCA2lS883Zde5PBAHIzfOnfcuzfV9rmHtH7fE4NsSM2rLMO8U6YlNtalXYQJ2j4wjlotPPQI/CAxeRWFJdWmKpnXkZ9zQh4j1w6sbTQrw7cCx2A6egZN5wFPy5wHKBBDUOMz0FHffCamzFIERwmY5vrSAtjfwVyszfSXMazJFxyHcmJbZes2inUY7ostDrmqfPCUXvMymg==&eI8E3EsVPEJTKHjsbh1T5utdUfJu5yDqglooPxiXkw8kibtYEzBy4eEsS6MkuS/0cZPrwbYlckpy4Wk3htiufz+Z8BDXei9Dos7qALyT2SnG1PGk2cf6nvsdv7KDt8ta+QGR5otnxF9PVxA95aXSLZjB9Faqpq9+tKU9vfslFpLhrOz8ZUizkXBUveMOUOhyx68GHZQY7so3dGfemAZRDPILUgSVauKN0tmRK/xqa5JDtyEEY0ljbGzKIptT12Be3bal2YNN9VffliVXY2vZL8ZMO72fuWgIM8eBDrVp9xmKNUu+TFeOERMTTsUDKwiHphoRKk05QonjQeGSq5dsDQ==";
 
         // ========= 3. 模拟网关生成privateContent =========
         String timestamp = String.valueOf(System.currentTimeMillis());

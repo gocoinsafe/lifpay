@@ -73,7 +73,7 @@ public class CheckGlobalFilter implements GlobalFilter, Ordered {
 
     private final String getServerKeyIdUrl = "/api/serverKeyId/get";
 
-    private final List<String> needRsaUrl = Arrays.asList("/wapi/admin/user/login");
+    private final List<String> needRsaUrl = Arrays.asList("/api/user/login");
 
     @Value("#{'${whiteList}'.split(',')}")
     List<String> whiteList;
@@ -83,7 +83,7 @@ public class CheckGlobalFilter implements GlobalFilter, Ordered {
     private static final Integer SECOND = 60;
     private static final Integer MILLISECOND = 1000;
 
-    @Value("${tokenExpireTime.token_Expire_Time:18000}")
+    @Value("${tokenExpireTime.token_Expire_Time:604800}")
     private int tokenValidTime;
 
 
@@ -103,14 +103,15 @@ public class CheckGlobalFilter implements GlobalFilter, Ordered {
         //防重放
         String timestamp = bodyJson.getString("timestamp");
         String requestId = bodyJson.getString("requestId");
-        Pair<Boolean, Mono<Void>> replayAttackResult = preventReplayAttack(exchange, timestamp, requestId);
-        log.info("replayAttackResult ===" + JSON.toJSONString(replayAttackResult));
-        if (!replayAttackResult.getKey()) {
-            return replayAttackResult.getValue();
-        }
+//        Pair<Boolean, Mono<Void>> replayAttackResult = preventReplayAttack(exchange, timestamp, requestId);
+//        log.info("replayAttackResult ===" + JSON.toJSONString(replayAttackResult));
+//        if (!replayAttackResult.getKey()) {
+//            return replayAttackResult.getValue();
+//        }
         if (getServerKeyIdUrl.equals(uri)) {
             return getServerKeyMono(exchange);
         }
+        // 椭圆曲线算的 公钥
         String aesKey = publicKey;
         Map<String, String> data = new HashMap<>(4);
         putKeys(uri, aesKey, timestamp, data);
@@ -121,7 +122,9 @@ public class CheckGlobalFilter implements GlobalFilter, Ordered {
         }
 
         //从cookie中获取token
-        String jwtToken = getToken(request.getCookies());
+//        String jwtToken = getToken(request.getCookies());
+//        String jwtToken = "8748418b-0b3f-4965-b8f0-4e68e014074b";
+        String jwtToken = exchange.getRequest().getHeaders().getFirst("token");
         //校验jwtToken的合法性
         if (jwtToken != null) {
             Pair<Boolean, Mono<Void>> result = verifyTokenAndSign(exchange, jwtToken, raw, data);
@@ -134,7 +137,7 @@ public class CheckGlobalFilter implements GlobalFilter, Ordered {
                 return chain.filter(exchange);
             }
 
-            return RequestAddDataUtil.addData(null, exchange, chain, signResponse(exchange));
+            return RequestAddDataUtil.addData(data, exchange, chain, signResponse(exchange));
         }
         log.info("用户未登录……");
         return getErrorVoidMono(exchange);
@@ -204,11 +207,29 @@ public class CheckGlobalFilter implements GlobalFilter, Ordered {
         // 验签
         boolean checkSign = ECUtil.verify(raw, sign, publicKey, ECUtil.SECP256R1);
         if (!checkSign) {
-            log.error("publicKey:{} ,checkSign:{}", publicKey, checkSign);
+            log.error("raw:{},sign:{},publicKey:{} ,checkSign:{}",raw, sign, publicKey, checkSign);
             return new Pair<>(false, getSignErrorMono(exchange));
         }
         return new Pair<>(true, null);
     }
+
+
+    public static void main(String[] args) {
+
+        String publicKey = "046769d15c6e2c22ebd61b0c399c065b277212077d27fe34f6b66b98c78afeb8a3746e141da87a5ab2a85bd72ff9f78e1524e77a232187f2391700e10ef7b5fa24";
+        String raw = "{\"timestamp\":1768550870014,\"requestId\":\"HlWEIg0hdO7OdiUNY8hgKULDEo1eRrz5\"}";
+
+        String sign = "e7f5df0e733686c073644521edf81c03fb220583e7d8bbf779e2e8e242064aba052f619e0a98c1e6ba669f1d7efe9e26c734c03d05d52a87b93ae39141a18e89";
+
+
+        boolean checkSign = ECUtil.verify(raw, sign, publicKey, ECUtil.SECP256R1);
+        if (!checkSign) {
+            log.error("publicKey:{} ,checkSign:{}",publicKey , checkSign);
+
+        }
+    }
+
+
 
     /**
      * 获取token信息
@@ -217,8 +238,7 @@ public class CheckGlobalFilter implements GlobalFilter, Ordered {
      */
     private JSONObject getTokenInfo(String token) {
         log.info("token = " + token);
-//        String jsonToken = getUserIdFromToken(token);
-        String jsonToken = null;
+        String jsonToken = getUserIdFromToken(token);
         if (jsonToken == null) {
             log.error("error: TOKEN IS NULL;  token:{}", token);
             return null;

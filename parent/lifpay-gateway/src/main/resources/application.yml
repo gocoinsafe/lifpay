@@ -20,6 +20,19 @@ spring:
           predicates:
             - Path=/api/misc/**
 
+  redis:
+    database: 0
+    host: 127.0.0.1
+    port: 6379
+    password:
+    timeout: 3000
+    jedis:
+      pool:
+        max-active: 50
+        max-idle: 8
+        min-idle: 2
+        max-wait: -1
+
 
 
 
@@ -28,7 +41,7 @@ spring:
 
 
 exportUrlList: "/wapi/account/asset/flow/export"
-whiteList: "/api/user/login,/api/message/sms/send"
+whiteList: "/api/user/login,/api/misc/sms/send"
 
 
 sign:
@@ -36,5 +49,6 @@ sign:
   privateKey: e74ce0ebcf6222cec84dccaecf4f1a2d76a7043e8423e1eeb4fbb0aa7659f7c3
   keyId: CFCD208495D565EF66E7DFF9F98764DA
 rsa:
+  #privateKey: MIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQCvyV0ArzIp7PkJU/jpK2dLYW+i644/N3aOd7fX6Gtc2alCD7gu9XbFOI6WvVsiQYaaxWcOGS+6oVEX3t8pr0yw3f/Pj35OC5co+Z2qAsdC1VgmC40+ezg7BlDTSGEfRLhmT+myY453h83+psLzYREJvPEJ2TZpLfPMx60kvhSLnlQmGWfhWOG3Su0NPLZSiLcwljw46jYjuL7f5BicjHh54a9XgZAZGESkc1Mvs0yKS+O+z75shsw4xOhab7hju7b0C3oM/l8ttxlMNIfn2MnBkii9JcSmoRiY3HN+7F6k2vC7zESuOpeucz7DnSiImKH4xIIW++MjKQ3g6YFO+qkPAgMBAAECggEAVaTrtPummxqjstHAwgmth+Ju+5d8dHxXPM5DOeQ4+sHpXxA9klNxjGEjx3l2P1hhdmKa9Rl8UZdq5RBm9e48lSd0DPJCfU/UU9hZ4oz7/Cnpio+yPzDVkpxfILFw8EUQ+ngQyiMLNF1sFZe1/9HY9T+iyEOV6OTElY7rYq1hYSvwCrD+sxfk4zBRjV+eG8PDdS1RBrQwJi5ecjaDgnVHdTX37JdfwFxl6CmAXkuLMwq0W+HNNXyPR194UuDXuAg86Q1Y84SA4mgDKbSU8kwUec+KakhVcAIxDN5x9XrsKg2hcCTyct8K6sljIROcfh9//udmBhW3F1bzuqaxwu+wMQKBgQDyqxDVPtshWFkM9oyzwlAULvyZGUL6Cq/Fgge0qUA5qkQzGGfO15wt2vYqKiEQo2qZZ0+OsjNNd6VDfUDgpyRLBNsLe+zXXXLdXQdNE9vyiB8wiV/9igTFuh28V7icW6KErgghKKCLm7vOK3u7ZYTyapcfyQdVG/rNB6F0e5tgzQKBgQC5cakjC8G5a0QhHQMTa9KYgwNWu30KJUQCnT1npY2vZ8bQje9Gdhg4bJYfYuVlXSfRRbNUX6pqRzPyZAtut0jDExsOnzMjBporZ4WgPi4DnEHR+d0ovyENt+Viqje9DP6KHxCfDrzghfEy51JmoQAbIaggBQekpSRRrDgwJ2aBSwKBgQCfLK6B8hTyrmzbH+3zC4ZTdu6hzfws302klEJRsqM6MAFEMsIE31DGk1XdGn1N2KNXtHhu9VzJd62js0kXEwuvWaQEyGj2a4mowhjD6j7fu4IZ6EJaoGm4+PgATtn9Ve4oca9LcMa+TIzIE6W5qkGmcVxnsQlqPkwoqNSy/1FQEQKBgAEB4Q1TrwW203PqmG2ulEJH0+jQs+kuMqRg/khl2dMuGSJg4v/a/F6yGE6rVtuqGeFFI6g9rMtO/7U9XeKIFFka7Xay3rA+BPBfa5ZnQBC89I6TcOQbxa4xZYmXqx3XyDov2QNELTp6/8hrAUOVdE6xbBxgap42V3AqI1P/osrpAoGAXDWnR2oWnuCxFcUiwSe9/XSHfbYqWZBd35Y5e24hMBkyUdqZKIkMI4jIGvZ2/3FiKSPqF+uhbnKiT7JIK0TIs6l2IrJ46Xh9j6IQCRmglfKbZMgQMAvJQpSl4Nn+sow2MXMGOcLcPt85tL1e4AsImLXywwlMtf4btW1ALZoL8Bg=
   privateKey: MIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQCvyV0ArzIp7PkJU/jpK2dLYW+i644/N3aOd7fX6Gtc2alCD7gu9XbFOI6WvVsiQYaaxWcOGS+6oVEX3t8pr0yw3f/Pj35OC5co+Z2qAsdC1VgmC40+ezg7BlDTSGEfRLhmT+myY453h83+psLzYREJvPEJ2TZpLfPMx60kvhSLnlQmGWfhWOG3Su0NPLZSiLcwljw46jYjuL7f5BicjHh54a9XgZAZGESkc1Mvs0yKS+O+z75shsw4xOhab7hju7b0C3oM/l8ttxlMNIfn2MnBkii9JcSmoRiY3HN+7F6k2vC7zESuOpeucz7DnSiImKH4xIIW++MjKQ3g6YFO+qkPAgMBAAECggEAVaTrtPummxqjstHAwgmth+Ju+5d8dHxXPM5DOeQ4+sHpXxA9klNxjGEjx3l2P1hhdmKa9Rl8UZdq5RBm9e48lSd0DPJCfU/UU9hZ4oz7/Cnpio+yPzDVkpxfILFw8EUQ+ngQyiMLNF1sFZe1/9HY9T+iyEOV6OTElY7rYq1hYSvwCrD+sxfk4zBRjV+eG8PDdS1RBrQwJi5ecjaDgnVHdTX37JdfwFxl6CmAXkuLMwq0W+HNNXyPR194UuDXuAg86Q1Y84SA4mgDKbSU8kwUec+KakhVcAIxDN5x9XrsKg2hcCTyct8K6sljIROcfh9//udmBhW3F1bzuqaxwu+wMQKBgQDyqxDVPtshWFkM9oyzwlAULvyZGUL6Cq/Fgge0qUA5qkQzGGfO15wt2vYqKiEQo2qZZ0+OsjNNd6VDfUDgpyRLBNsLe+zXXXLdXQdNE9vyiB8wiV/9igTFuh28V7icW6KErgghKKCLm7vOK3u7ZYTyapcfyQdVG/rNB6F0e5tgzQKBgQC5cakjC8G5a0QhHQMTa9KYgwNWu30KJUQCnT1npY2vZ8bQje9Gdhg4bJYfYuVlXSfRRbNUX6pqRzPyZAtut0jDExsOnzMjBporZ4WgPi4DnEHR+d0ovyENt+Viqje9DP6KHxCfDrzghfEy51JmoQAbIaggBQekpSRRrDgwJ2aBSwKBgQCfLK6B8hTyrmzbH+3zC4ZTdu6hzfws302klEJRsqM6MAFEMsIE31DGk1XdGn1N2KNXtHhu9VzJd62js0kXEwuvWaQEyGj2a4mowhjD6j7fu4IZ6EJaoGm4+PgATtn9Ve4oca9LcMa+TIzIE6W5qkGmcVxnsQlqPkwoqNSy/1FQEQKBgAEB4Q1TrwW203PqmG2ulEJH0+jQs+kuMqRg/khl2dMuGSJg4v/a/F6yGE6rVtuqGeFFI6g9rMtO/7U9XeKIFFka7Xay3rA+BPBfa5ZnQBC89I6TcOQbxa4xZYmXqx3XyDov2QNELTp6/8hrAUOVdE6xbBxgap42V3AqI1P/osrpAoGAXDWnR2oWnuCxFcUiwSe9/XSHfbYqWZBd35Y5e24hMBkyUdqZKIkMI4jIGvZ2/3FiKSPqF+uhbnKiT7JIK0TIs6l2IrJ46Xh9j6IQCRmglfKbZMgQMAvJQpSl4Nn+sow2MXMGOcLcPt85tL1e4AsImLXywwlMtf4btW1ALZoL8Bg=
 
