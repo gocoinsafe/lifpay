@@ -1,7 +1,7 @@
 package org.hcm.lifpay.user.dto.req;
 
 
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import org.hcm.lifpay.common.BaseRequest;
@@ -9,6 +9,6 @@ import org.hcm.lifpay.common.BaseRequest;
 @EqualsAndHashCode(callSuper = true)
 @Data
 public class IncludePkRequest extends BaseRequest {
-    @ApiModelProperty(hidden = true)
+    @Schema(hidden = true)
     private String aesKey;
 }

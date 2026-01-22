@@ -1,10 +1,12 @@
 package org.hcm.lifpay.misc.config;
 
 
-import com.github.xiaoymin.knife4j.spring.annotations.EnableKnife4j;
+import io.swagger.v3.oas.models.Components;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.info.Contact;
 import io.swagger.v3.oas.models.info.Info;
+import io.swagger.v3.oas.models.security.SecurityRequirement;
+import io.swagger.v3.oas.models.security.SecurityScheme;
 import org.hcm.lifpay.misc.common.MiscResultEnum;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -101,14 +103,21 @@ public class SwaggerConfig {
 
 
     @Bean
-    public OpenAPI customOpenAPI() {
+    public OpenAPI openAPI() {
         return new OpenAPI()
                 .info(new Info()
-                        .title("misc服务API文档")
-                        .description("Swagger3 接口文档（Spring Boot 2.6.11）")
-                        .version("1.0")
-                        .contact(new Contact()
-                                .name("Lifpay Team")));
+                        .title("Lifpay misc API")
+                        .description("Lifpay misc 微服务接口文档")
+                        .version("1.0.0"))
+                // 全局 Header（Authorization）
+                .addSecurityItem(new SecurityRequirement().addList("Authorization"))
+                .components(new Components()
+                        .addSecuritySchemes("Authorization",
+                                new SecurityScheme()
+                                        .name("Authorization")
+                                        .type(SecurityScheme.Type.APIKEY)
+                                        .in(SecurityScheme.In.HEADER)
+                                        .description("JWT Token")));
     }
 
 

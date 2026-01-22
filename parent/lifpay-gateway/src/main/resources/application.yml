@@ -10,13 +10,19 @@ spring:
       default-filters:
         #- PrefixPath=/api
       routes:
+        - id: lifpay-admin
+          #uri: lb://lifpay-admin
+          uri: http://localhost:9010  # 临时使用
+          predicates:
+            - Path=/api/admin/**
         - id: lifpay-user
 #          uri: lb://lifpay-user
-          uri: http://127.0.0.1:9005   # 临时使用
+          uri: http://localhost:9005   # 临时使用
           predicates:
             - Path=/api/user/**,/api/serverKeyId/**
         - id: lifpay-misc
-          uri: lb://lifpay-misc
+          #uri: lb://lifpay-misc
+          uri: http://localhost:9012  # 临时使用
           predicates:
             - Path=/api/misc/**
 
@@ -34,6 +40,20 @@ spring:
         max-wait: -1
 
 
+knife4j:
+  enable: true
+  gateway:
+    enabled: false
+    routes:
+      - name: admin
+        url: http://localhost:9010/v3/api-docs
+        service-name: lifpay-admin
+      - name: user
+        url: http://localhost:9005/v3/api-docs
+        service-name: lifpay-user
+      - name: misc
+        url: http://localhost:9012/v3/api-docs
+        service-name: lifpay-misc
 
 
 
@@ -41,7 +61,7 @@ spring:
 
 
 exportUrlList: "/wapi/account/asset/flow/export"
-whiteList: "/api/user/login,/api/misc/sms/send"
+whiteList: "/api/user/login,/api/misc/sms/send,/api/misc/country/list"
 
 
 sign:

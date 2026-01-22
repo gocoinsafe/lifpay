@@ -1,31 +1,31 @@
 package org.hcm.lifpay.user.dto.resp;
 
 
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
 @Data
 public class ContactListResp {
 
-    @ApiModelProperty(value = "联系人Id")
+    @Schema(description = "联系人Id")
     private Long id;
 
 
-    @ApiModelProperty(value = "联系人姓名")
+    @Schema(description = "联系人姓名")
     private String contactName;
 
 
-    @ApiModelProperty(value = "Lightning地址")
+    @Schema(description = "Lightning地址")
     private String address;
 
 
-    @ApiModelProperty(value = "联系人邮箱")
+    @Schema(description = "联系人邮箱")
     private String email;
 
-    @ApiModelProperty(value = "nostr账号")
+    @Schema(description = "nostr账号")
     private String nostr;
 
-    @ApiModelProperty(value = "备注")
+    @Schema(description = "备注")
     private String note;
 
 

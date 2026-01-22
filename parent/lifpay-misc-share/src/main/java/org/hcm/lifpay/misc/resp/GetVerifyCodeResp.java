@@ -1,12 +1,12 @@
 package org.hcm.lifpay.misc.resp;
 
 
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
 @Data
 public class GetVerifyCodeResp {
 
-    @ApiModelProperty(value = "是否成功")
+    @Schema(description = "是否成功")
     private Boolean result;
 }

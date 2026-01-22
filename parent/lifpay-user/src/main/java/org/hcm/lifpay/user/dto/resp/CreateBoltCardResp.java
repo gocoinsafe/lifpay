@@ -1,7 +1,7 @@
 package org.hcm.lifpay.user.dto.resp;
 
 
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 import org.hcm.lifpay.user.dao.entity.BoltCardDo;
 
@@ -10,47 +10,49 @@ public class CreateBoltCardResp {
 
 
 
-    @ApiModelProperty(value = "授权密钥")
+    @Schema(description = "授权密钥")
     private String k0;
 
 
-    @ApiModelProperty(value = "AES 密钥1")
+    @Schema(description = "AES 密钥1")
     private String k1;
 
-    @ApiModelProperty(value = "AES 密钥2")
+    @Schema(description = "AES 密钥2")
     private String k2;
 
-    @ApiModelProperty(value = "等于 k1")
+    @Schema(description = "等于 k1")
     private String k3;
 
-    @ApiModelProperty(value = "等于 k2")
+    @Schema(description = "等于 k2")
     private String k4;
 
 
 
-    @ApiModelProperty(value = "boltcard_id")
+    @Schema(description = "boltcard_id")
     private Long id;
 
-    @ApiModelProperty(value = "card id")
+    @Schema(description = "card id")
     private String uid;
 
-    @ApiModelProperty(value = "card_name")
+    @Schema(description = "card_name")
     private String cardName;
 
 
-    @ApiModelProperty(value = "lifpay.com")
+    @Schema(description = "lifpay.com")
     private String lnurlwBase;
 
-    @ApiModelProperty(value = "protocol_name")
+    @Schema(description = "protocol_name")
     private String protocolName;
 
-    @ApiModelProperty(value = "protocol_version")
+    @Schema(description = "protocol_version")
     private String protocolVersion;
 
-    @ApiModelProperty(value = "如果 privacy=1 则为 \"Y\"")
+    @Schema(description = "如果 privacy=1 则为 \"Y\"")
     private String uidPrivacy;
 
+    public CreateBoltCardResp(){
 
+    }
     public CreateBoltCardResp(BoltCardDo boltCardDo){
         this.k0 = boltCardDo.getK0();
         this.k1 = boltCardDo.getK1();

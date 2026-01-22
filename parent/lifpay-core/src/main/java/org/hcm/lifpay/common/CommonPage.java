@@ -1,7 +1,7 @@
 package org.hcm.lifpay.common;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -21,10 +21,10 @@ public class CommonPage<T> implements Serializable {
     private Long total;
     private List<T> list;
 
-    @ApiModelProperty(value = "上一次排序值")
+    @Schema(description = "上一次排序值")
     private Object[] lastSortValues=null;
 
-    @ApiModelProperty(value = "最后一条排序值")
+    @Schema(description = "最后一条排序值")
     private String  currentField;
 
     public static <T> CommonPage<T> restPage(List<T> list) {

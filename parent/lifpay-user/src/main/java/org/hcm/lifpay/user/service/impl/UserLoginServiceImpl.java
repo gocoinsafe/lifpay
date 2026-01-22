@@ -221,7 +221,7 @@ public class UserLoginServiceImpl implements UserLoginService {
     @Override
     public void logout(BaseRequest request, HttpServletResponse httpServletResponse) {
         logout(request.getUserId().toString(), request.getDeviceId());
-        httpServletResponse.addCookie(createCookie(Constants.TOKEN_NAME, null, 0, "", false));
+//        httpServletResponse.addCookie(createCookie(Constants.TOKEN_NAME, null, 0, "", false));
     }
 
     @Override

@@ -2,28 +2,29 @@ package org.hcm.lifpay.misc.dto.resp;
 
 
 import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
 @Data
 public class CountryListResp {
 
 
-    @ApiModelProperty(value = "id")
+    @Schema(description = "id")
     Long id;
 
-    @ApiModelProperty(value = "中文名称")
+    @Schema(description = "中文名称")
     String cnName;
 
-    @ApiModelProperty(value = "英文名称")
+    @Schema(description = "英文名称")
     String enName;
 
-    @ApiModelProperty(value = "简称")
+    @Schema(description = "简称")
     String abbreviation;
 
-    @ApiModelProperty(value = "区域代码")
+    @Schema(description = "区域代码")
     String code;
 
-    @ApiModelProperty(value = "国家图标logo")
+    @Schema(description = "国家图标logo")
     String icon;
 
 

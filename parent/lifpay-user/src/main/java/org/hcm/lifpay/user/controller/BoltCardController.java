@@ -10,6 +10,7 @@ import org.hcm.lifpay.common.CommonPage;
 import org.hcm.lifpay.user.dto.req.BoltCardsInfoReq;
 import org.hcm.lifpay.user.dto.req.ContactListReq;
 import org.hcm.lifpay.user.dto.req.CreateBoltCardReq;
+import org.hcm.lifpay.user.dto.req.QueryBoltReq;
 import org.hcm.lifpay.user.dto.resp.ContactListResp;
 import org.hcm.lifpay.user.dto.resp.CreateBoltCardResp;
 import org.hcm.lifpay.user.service.BoltCardService;
@@ -38,6 +39,22 @@ public class BoltCardController {
         log.info("bindingBoltCards request: " + JSON.toJSONString(request));
         BaseResponse<CreateBoltCardResp> response = boltCardService.createBoltCards(request);
         log.info("bindingBoltCards response: " + JSON.toJSONString(response));
+        return response;
+    }
+
+    /**
+     * 5. 查询和管理流程
+     * 查询用户的查询卡片列表
+     *
+     * @param request 请求
+     * @return 响应
+     */
+    @PostMapping(path = "/boltCard/query")
+    @ApiOperation(value = "查询用户的bolt card 列表", notes = "bolt card")
+    public @ResponseBody BaseResponse<CommonPage<CreateBoltCardResp>> queryBoltCards(@RequestBody QueryBoltReq request) {
+        log.info("queryBoltCards.request:{} ", JSON.toJSONString(request));
+        BaseResponse<CommonPage<CreateBoltCardResp>> response = boltCardService.queryBoltCards(request);
+        log.info("queryBoltCards.response:{}", JSON.toJSONString(response));
         return response;
     }
 
@@ -77,21 +94,7 @@ public class BoltCardController {
 
 
 
-    /**
-     * 5. 查询和管理流程
-     * 查询用户的查询卡片列表
-     *
-     * @param request 请求
-     * @return 响应
-     */
-    @PostMapping(path = "/boltCard/query")
-    @ApiOperation(value = "查询用户的bolt card 列表", notes = "bolt card")
-    public @ResponseBody BaseResponse<CommonPage<CreateBoltCardResp>> queryBoltCards(@RequestBody BaseRequest request) {
-        log.info("queryBoltCards request: " + JSON.toJSONString(request));
-        BaseResponse<CommonPage<CreateBoltCardResp>> response = boltCardService.queryBoltCards(request);
-        log.info("queryBoltCards response: " + JSON.toJSONString(response));
-        return response;
-    }
+
 
 
     /**

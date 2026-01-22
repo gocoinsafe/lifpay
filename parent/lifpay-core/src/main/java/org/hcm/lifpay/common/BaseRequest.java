@@ -1,7 +1,7 @@
 package org.hcm.lifpay.common;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
 @JsonIgnoreProperties(
@@ -12,7 +12,7 @@ public class BaseRequest {
     private String deviceId;
     private String os;
     private String version;
-    @ApiModelProperty(hidden = true)
+    @Schema(hidden = true)
     private Long userId;
     private Long timestamp;
 }

@@ -5,6 +5,7 @@ import org.hcm.lifpay.common.BaseResponse;
 import org.hcm.lifpay.common.CommonPage;
 import org.hcm.lifpay.user.dto.req.BoltCardsInfoReq;
 import org.hcm.lifpay.user.dto.req.CreateBoltCardReq;
+import org.hcm.lifpay.user.dto.req.QueryBoltReq;
 import org.hcm.lifpay.user.dto.resp.CreateBoltCardResp;
 
 public interface BoltCardService {
@@ -21,7 +22,7 @@ public interface BoltCardService {
     BaseResponse<CreateBoltCardResp> getBoltCardsBeyToken(BoltCardsInfoReq req);
 
 
-    BaseResponse<CommonPage<CreateBoltCardResp>> queryBoltCards(BaseRequest req);
+    BaseResponse<CommonPage<CreateBoltCardResp>> queryBoltCards(QueryBoltReq req);
 
 
     BaseResponse<CommonPage<CreateBoltCardResp>> boltCardsTransactionQuery(BaseRequest req);

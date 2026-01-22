@@ -1,21 +1,21 @@
 package org.hcm.lifpay.misc.req;
 
 
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
 @Data
 public class InnerGetVerifyCodeReq {
 
 
-    @ApiModelProperty(value = "email/phone")
+    @Schema(description = "email/phone")
     String contact;
 
-    @ApiModelProperty(value = "消息类型：0-邮箱，1-手机号")
+    @Schema(description = "消息类型：0-邮箱，1-手机号")
     Integer type;
 
 
-    @ApiModelProperty(value = "验证码")
+    @Schema(description = "验证码")
     String verifyCode;
 
 }

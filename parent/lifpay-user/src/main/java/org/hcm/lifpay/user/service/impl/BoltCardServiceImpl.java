@@ -1,7 +1,9 @@
 package org.hcm.lifpay.user.service.impl;
 
+import cn.hutool.core.collection.CollectionUtil;
 import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.hcm.lifpay.common.BaseRequest;
@@ -16,6 +18,7 @@ import org.hcm.lifpay.user.dao.repository.LnurlwRequestRepository;
 import org.hcm.lifpay.user.dto.UserResultEnum;
 import org.hcm.lifpay.user.dto.req.BoltCardsInfoReq;
 import org.hcm.lifpay.user.dto.req.CreateBoltCardReq;
+import org.hcm.lifpay.user.dto.req.QueryBoltReq;
 import org.hcm.lifpay.user.dto.resp.CreateBoltCardResp;
 import org.hcm.lifpay.user.exception.LifpayException;
 import org.hcm.lifpay.user.service.BoltCardService;
@@ -25,6 +28,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 
 @Service
@@ -94,9 +100,40 @@ public class BoltCardServiceImpl implements BoltCardService {
         return response;
     }
 
+    @Override
+    public BaseResponse<CommonPage<CreateBoltCardResp>> queryBoltCards(QueryBoltReq req) {
+        log.info("getBoltCardsInfo.req:{}", JSON.toJSONString(req));
+        // 根据用户id 查询该用户地下的所有 bolt card
+        BaseResponse<CommonPage<CreateBoltCardResp>> response = new BaseResponse<>();
+
+        Page<BoltCardDo> queryPage = new Page<>(req.getPageNo(),req.getPageSize());
+        LambdaQueryWrapper<BoltCardDo> queryWrapper = new LambdaQueryWrapper<BoltCardDo>()
+                .eq(BoltCardDo:: getUserId, req.getUserId())
+                .eq(BoltCardDo:: getStatus, BoltCarStatus.NORMAL.getType());
+
+        Page<BoltCardDo> pageList = boltCardRepository.selectPage(queryPage,queryWrapper);
+        if (CollectionUtil.isEmpty(pageList.getRecords())){
+            return response;
+        }
+        List<CreateBoltCardResp> boltCardRespList = new ArrayList<>();
+        for (BoltCardDo boltCardDo :pageList.getRecords()){
+            CreateBoltCardResp cardResp = new CreateBoltCardResp(boltCardDo);
+            boltCardRespList.add(cardResp);
+        }
+        response.setData(CommonPage.restPage(pageList.getTotal(), pageList.getCurrent(), pageList.getSize(), pageList.getPages(), boltCardRespList));
+
+        return response;
+    }
+
+
 
     @Override
     public BaseResponse<CreateBoltCardResp> getBoltCardsInfo(BoltCardsInfoReq req) {
+        log.info("getBoltCardsInfo.req:{}", JSON.toJSONString(req));
+        // 根据用户id 查询
+
+
+
         return null;
     }
 
@@ -107,10 +144,7 @@ public class BoltCardServiceImpl implements BoltCardService {
     }
 
 
-    @Override
-    public BaseResponse<CommonPage<CreateBoltCardResp>> queryBoltCards(BaseRequest req) {
-        return null;
-    }
+
 
 
     @Override

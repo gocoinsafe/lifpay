@@ -1,6 +1,6 @@
 package org.hcm.lifpay.user.dto.resp;
 
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
 import java.math.BigDecimal;
@@ -9,34 +9,34 @@ import java.math.BigDecimal;
 public class TransactionListResp {
 
 
-    @ApiModelProperty(value = "id")
+    @Schema(description = "id")
     Long id;
 
-    @ApiModelProperty(value = "user id")
+    @Schema(description = "user id")
     Long userId;
 
-    @ApiModelProperty(value = "交易哈希（全局唯一）")
+    @Schema(description = "交易哈希（全局唯一）")
     String transactionHash;
 
-    @ApiModelProperty(value = "转账地址")
+    @Schema(description = "转账地址")
     String fromAddress;
 
-    @ApiModelProperty(value = "收款地址")
+    @Schema(description = "收款地址")
     String toAddress;
 
-    @ApiModelProperty(value = "交易金额")
+    @Schema(description = "交易金额")
     BigDecimal amount;
 
-    @ApiModelProperty(value = "交易手续费")
+    @Schema(description = "交易手续费")
     BigDecimal fee;
 
-    @ApiModelProperty(value = "订单状态：0-待处理 1-交易成功 2-交易失败 3-已撤销")
+    @Schema(description = "订单状态：0-待处理 1-交易成功 2-交易失败 3-已撤销")
     Integer status;
 
-    @ApiModelProperty(value = "创建时间")
+    @Schema(description = "创建时间")
     Long createTime;
 
-    @ApiModelProperty(value = "更新时间")
+    @Schema(description = "更新时间")
     Long updateTime;
 
 

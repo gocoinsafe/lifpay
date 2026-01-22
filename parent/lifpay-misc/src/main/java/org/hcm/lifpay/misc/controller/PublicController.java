@@ -16,7 +16,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @Api(value = "Lifpay短信服务", tags = "Lifpay短信服务")
 @Slf4j
-@RequestMapping("/misc")
+@RequestMapping("/api/misc")
 public class PublicController {
 
     @Autowired

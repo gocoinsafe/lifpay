@@ -81,7 +81,6 @@ mybatis-plus:
 
 
 
-
 misc:
   sms:
     secretId: IKIDBG9pIbgYFiAa1PbnqhMn370hBfz61WxU
@@ -94,3 +93,9 @@ misc:
     content: Watch out for scams. DON'T share this security code with anyone, our employees will never ask for the code. Your Lifpay verification code is
 
 
+
+springdoc:
+  api-docs:
+    enabled: true
+  swagger-ui:
+    enabled: true
