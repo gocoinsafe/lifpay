@@ -3,3 +3,14 @@ server:
 spring:
   application:
     name: lifpay-admin
+
+
+
+
+
+
+springdoc:
+  api-docs:
+    enabled: true
+  swagger-ui:
+    enabled: true
