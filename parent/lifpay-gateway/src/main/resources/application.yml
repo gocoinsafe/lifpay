@@ -21,8 +21,8 @@ spring:
           predicates:
             - Path=/api/user/**,/api/serverKeyId/**
         - id: lifpay-misc
-          #uri: lb://lifpay-misc
-          uri: http://localhost:9012  # 临时使用
+          uri: lb://lifpay-misc
+          #uri: http://localhost:9012  # 临时使用
           predicates:
             - Path=/api/misc/**
         - id: lifpay-data
@@ -44,21 +44,6 @@ spring:
         min-idle: 2
         max-wait: -1
 
-
-#knife4j:
-#  enable: true
-#  gateway:
-#    enabled: true
-#    routes:
-#      - name: admin
-#        url: http://localhost:9010/v3/api-docs
-#        service-name: lifpay-admin
-#      - name: user
-#        url: http://localhost:9005/v3/api-docs
-#        service-name: lifpay-user
-#      - name: misc
-#        url: http://localhost:9012/v3/api-docs
-#        service-name: lifpay-misc
 
 
 

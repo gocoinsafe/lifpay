@@ -15,36 +15,36 @@ public class BreezServiceImpl implements BreezService {
 
     @Override
     public BaseResponse<String> breezRegisterLnUrlWebHook(RegisterLnUrlWebhookReq request) {
-        return null;
+        return new BaseResponse<>();
     }
 
 
     @Override
     public BaseResponse<String> breezUnregisterLnUrlWebHook(RegisterLnUrlWebhookReq request) {
-        return null;
+        return new BaseResponse<>();
     }
 
     @Override
     public BaseResponse<String> breezLnurlPayRecover(RegisterLnUrlWebhookReq request) {
-        return null;
+        return new BaseResponse<>();
     }
 
 
     @Override
     public BaseResponse<String> breezLnurlPayIdentifier(LnurlPayIdentifierReq request) {
-        return null;
+        return new BaseResponse<>();
     }
 
 
     @Override
     public BaseResponse<String> breezLnurlPayInvoice(LnurlPayInvoiceReq request) {
-        return null;
+        return new BaseResponse<>();
     }
 
 
     @Override
     public BaseResponse<String> breezLnUrlPayResponse(WebhookCallbackReq request) {
-        return null;
+        return new BaseResponse<>();
     }
 
 

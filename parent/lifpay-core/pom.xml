@@ -18,6 +18,12 @@
     </properties>
     <dependencies>
 
+        <!-- SpringCloud Loadbalancer -->
+        <dependency>
+            <groupId>org.springframework.cloud</groupId>
+            <artifactId>spring-cloud-starter-loadbalancer</artifactId>
+        </dependency>
+
         <!-- SpringCloud nacos -->
         <dependency>
             <groupId>com.alibaba.cloud</groupId>

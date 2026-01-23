@@ -12,4 +12,22 @@ public class RegisterLnUrlWebhookReq extends BaseRequest {
     @Schema(description = "pubkey", required = true)
     String pubkey;
 
+
+    @Schema(description = "时间戳", required = true)
+    Long time;
+
+    @Schema(description = "webhook url")
+    String webhookUrl;
+
+    @Schema(description = "用户名")
+    String userName;
+
+    @Schema(description = "报价")
+    String offer;
+
+    @Schema(description = "签名信息")
+    String signature;
+
+
+
 }

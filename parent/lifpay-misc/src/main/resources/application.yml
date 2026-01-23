@@ -1,6 +1,6 @@
 # flyway配置（如果需要使用flyway，保持以下配置，无需嵌套datasource）
 server:
-  port: 9013
+  port: 9012
 spring:
   mvc:
     pathmatch:
