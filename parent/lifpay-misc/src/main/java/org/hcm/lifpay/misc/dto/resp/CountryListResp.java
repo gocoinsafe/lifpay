@@ -1,7 +1,6 @@
 package org.hcm.lifpay.misc.dto.resp;
 
 
-import io.swagger.annotations.ApiModelProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 

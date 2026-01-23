@@ -1,8 +1,8 @@
 package org.hcm.lifpay.misc.controller;
 
 
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
+
+import io.swagger.v3.oas.annotations.Operation;
 import lombok.extern.slf4j.Slf4j;
 import org.hcm.lifpay.common.BaseResponse;
 import org.hcm.lifpay.misc.dto.resp.CountryListResp;
@@ -14,10 +14,10 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 
-@RestController
-@Api(value = "Lifpay表单", tags = "Lifpay表单")
+
 @Slf4j
 @RequestMapping("/api/misc")
+@RestController
 public class FormController {
 
     @Autowired
@@ -29,7 +29,7 @@ public class FormController {
     /**
      * 备注：此接口是面向外部全部用户的所以没有鉴权，属于高危风险接口！！！
      * */
-    @ApiOperation(value = "提交表单接口")
+    @Operation(summary = "提交表单接口")
     @PostMapping(path = "/form/submit")
     public BaseResponse<String> submitForm(@RequestBody FormInfoRequest request) {
         log.info("收到表单提交请求: {}", request);
@@ -52,7 +52,7 @@ public class FormController {
 //    }
 
 
-    @ApiOperation(value = "获取国家列表接口")
+    @Operation(summary = "获取国家列表接口")
     @PostMapping(path = "/country/list")
     public BaseResponse<List<CountryListResp>> countryList() {
         log.info("获取国家列表接口");

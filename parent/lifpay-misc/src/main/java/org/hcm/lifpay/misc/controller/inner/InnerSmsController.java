@@ -2,7 +2,7 @@ package org.hcm.lifpay.misc.controller.inner;
 
 
 import com.alibaba.fastjson.JSON;
-import io.swagger.annotations.*;
+import io.swagger.v3.oas.annotations.Operation;
 import lombok.extern.slf4j.Slf4j;
 import org.hcm.lifpay.common.BaseResponse;
 import org.hcm.lifpay.misc.dto.req.GetVerifyCodeReq;
@@ -25,7 +25,7 @@ import javax.validation.Valid;
  */
 @Controller
 @RequestMapping(path = "/inner/misc", consumes = "application/json")
-@Api(value = "短信内部接口", tags = {"短信内部接口"})
+//@Api(value = "短信内部接口", tags = {"短信内部接口"})
 @Slf4j
 public class InnerSmsController {
 
@@ -40,9 +40,9 @@ public class InnerSmsController {
      * @return 返回
      */
     @PostMapping(path = {"/get/verifyCode"})
-    @ApiOperation(value = "验证短信验证码", notes = "验证短信验证码")
-    @ApiImplicitParam(value = "请求参数", required = true, dataType = "SmsCodeVerifyRequest", name = "request")
-    @ApiResponses(value = {@ApiResponse(code = 200, message = "Success message")})
+    @Operation(summary = "验证短信验证码")
+//    @ApiImplicitParam(value = "请求参数", required = true, dataType = "SmsCodeVerifyRequest", name = "request")
+//    @ApiResponses(value = {@ApiResponse(code = 200, message = "Success message")})
     @ResponseBody
     BaseResponse<GetVerifyCodeResp> smsCodeVerify(@Valid @RequestBody InnerGetVerifyCodeReq request) {
         String logPrefix = "smsCodeVerify";

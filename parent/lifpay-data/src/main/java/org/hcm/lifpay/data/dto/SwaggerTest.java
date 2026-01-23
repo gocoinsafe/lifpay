@@ -1,4 +1,4 @@
-package org.hcm.lifpay.misc.dto.req;
+package org.hcm.lifpay.data.dto;
 
 
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -9,7 +9,8 @@ import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 
 @Data
-public class GetVerifyCodeReq extends BaseRequest {
+@Schema(description = "验证码请求参数")
+public class SwaggerTest extends BaseRequest {
 
     @Schema(description = "联系方式：邮箱/手机号", required = true)
     @NotNull
@@ -25,5 +26,4 @@ public class GetVerifyCodeReq extends BaseRequest {
     @Schema(description = "随机数", required = true)
     @NotNull
     private Integer random;
-
 }

@@ -1,5 +1,13 @@
-# 正确的数据源配置（主数据源）
+# flyway配置（如果需要使用flyway，保持以下配置，无需嵌套datasource）
+server:
+  port: 9013
 spring:
+  mvc:
+    pathmatch:
+      matching-strategy: ant_path_matcher
+  application:
+    name: lifpay-misc
+
   datasource:
 #    url: jdbc:mysql://43.156.23.117:3306/misc?useUnicode=true&characterEncoding=utf-8&allowMultiQueries=true&autoReconnect=true&autoReconnectForPools=true&useSSL=false
 #    username: lifpay
@@ -66,9 +74,7 @@ spring:
           port: 465
           class: javax.net.ssl.SSLSocketFactory
 
-# flyway配置（如果需要使用flyway，保持以下配置，无需嵌套datasource）
-server:
-  port: 9012
+
 #  flyway:
 #    locations: classpath:db/migration
 #    enabled: false  # 目前flyway是禁用的，不影响主数据源
@@ -92,7 +98,8 @@ misc:
     title: Lifpay verify code
     content: Watch out for scams. DON'T share this security code with anyone, our employees will never ask for the code. Your Lifpay verification code is
 
-
+swagger:
+  enable: true
 
 springdoc:
   api-docs:

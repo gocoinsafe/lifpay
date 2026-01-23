@@ -16,7 +16,7 @@ spring:
           predicates:
             - Path=/api/admin/**
         - id: lifpay-user
-#          uri: lb://lifpay-user
+          #uri: lb://lifpay-user
           uri: http://localhost:9005   # 临时使用
           predicates:
             - Path=/api/user/**,/api/serverKeyId/**
@@ -25,6 +25,11 @@ spring:
           uri: http://localhost:9012  # 临时使用
           predicates:
             - Path=/api/misc/**
+        - id: lifpay-data
+          #uri: lb://lifpay-misc
+          uri: http://localhost:9002  # 临时使用
+          predicates:
+            - Path=/api/data/**
 
   redis:
     database: 0
@@ -40,20 +45,20 @@ spring:
         max-wait: -1
 
 
-knife4j:
-  enable: true
-  gateway:
-    enabled: false
-    routes:
-      - name: admin
-        url: http://localhost:9010/v3/api-docs
-        service-name: lifpay-admin
-      - name: user
-        url: http://localhost:9005/v3/api-docs
-        service-name: lifpay-user
-      - name: misc
-        url: http://localhost:9012/v3/api-docs
-        service-name: lifpay-misc
+#knife4j:
+#  enable: true
+#  gateway:
+#    enabled: true
+#    routes:
+#      - name: admin
+#        url: http://localhost:9010/v3/api-docs
+#        service-name: lifpay-admin
+#      - name: user
+#        url: http://localhost:9005/v3/api-docs
+#        service-name: lifpay-user
+#      - name: misc
+#        url: http://localhost:9012/v3/api-docs
+#        service-name: lifpay-misc
 
 
 
