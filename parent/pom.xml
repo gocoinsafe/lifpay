@@ -61,9 +61,6 @@
         <lifpay-admin.version>1.0-SNAPSHOT</lifpay-admin.version>
         <lifpay-user.version>1.0-SNAPSHOT</lifpay-user.version>
         <lifpay-data.version>1.0-SNAPSHOT</lifpay-data.version>
-
-
-
     </properties>
 
     <dependencyManagement>

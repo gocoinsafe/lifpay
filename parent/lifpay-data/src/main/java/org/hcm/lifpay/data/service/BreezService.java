@@ -5,6 +5,8 @@ import org.hcm.lifpay.data.dto.req.LnurlPayIdentifierReq;
 import org.hcm.lifpay.data.dto.req.LnurlPayInvoiceReq;
 import org.hcm.lifpay.data.dto.req.RegisterLnUrlWebhookReq;
 import org.hcm.lifpay.data.dto.req.WebhookCallbackReq;
+import org.hcm.lifpay.data.dto.resp.LnurlPayIdentifierResp;
+import org.hcm.lifpay.data.dto.resp.RegisterLnUrlWebhookResp;
 
 public interface BreezService {
 
@@ -12,7 +14,7 @@ public interface BreezService {
     /**
      * Webhook 注册
      * */
-    BaseResponse<String> breezRegisterLnUrlWebHook(RegisterLnUrlWebhookReq request);
+    BaseResponse<RegisterLnUrlWebhookResp> breezRegisterLnUrlWebHook(RegisterLnUrlWebhookReq request);
 
 
     /**
@@ -30,7 +32,7 @@ public interface BreezService {
     /**
      * LNURL支付信息端点
      * */
-    BaseResponse<String> breezLnurlPayIdentifier(LnurlPayIdentifierReq request);
+    BaseResponse<LnurlPayIdentifierResp> breezLnurlPayIdentifier(LnurlPayIdentifierReq request);
 
     /**
      * LNURL 付款接口

@@ -9,6 +9,8 @@ import org.hcm.lifpay.data.dto.req.LnurlPayIdentifierReq;
 import org.hcm.lifpay.data.dto.req.LnurlPayInvoiceReq;
 import org.hcm.lifpay.data.dto.req.RegisterLnUrlWebhookReq;
 import org.hcm.lifpay.data.dto.req.WebhookCallbackReq;
+import org.hcm.lifpay.data.dto.resp.LnurlPayIdentifierResp;
+import org.hcm.lifpay.data.dto.resp.RegisterLnUrlWebhookResp;
 import org.hcm.lifpay.data.service.BreezService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -35,7 +37,7 @@ public class BreezApiController {
      * */
     @Operation(summary = "注册lnurl Webhook")
     @PostMapping(path = "/breez/register/lnUrl/webHook")
-    public BaseResponse<String> breezRegisterLnUrlWebHook(@RequestBody RegisterLnUrlWebhookReq request) {
+    public BaseResponse<RegisterLnUrlWebhookResp> breezRegisterLnUrlWebHook(@RequestBody RegisterLnUrlWebhookReq request) {
         log.info("breezRegisterLnUrlWebHook: {}", request);
         return breezService.breezRegisterLnUrlWebHook(request);
     }
@@ -58,7 +60,7 @@ public class BreezApiController {
 
     @Operation(summary = "LNURL支付信息接口")
     @PostMapping(path = "/breez/ln-url-pay/identifier")
-    public BaseResponse<String> breezLnUrlPayIdentifier(@RequestBody LnurlPayIdentifierReq request) {
+    public BaseResponse<LnurlPayIdentifierResp> breezLnUrlPayIdentifier(@RequestBody LnurlPayIdentifierReq request) {
         log.info("breezLnUrlPayRecover: {}", request);
         return breezService.breezLnurlPayIdentifier(request);
     }
