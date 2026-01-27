@@ -17,6 +17,8 @@ import org.hcm.lifpay.user.dto.req.ContactListReq;
 import org.hcm.lifpay.user.dto.resp.ContactListResp;
 import org.hcm.lifpay.user.exception.LifpayException;
 import org.hcm.lifpay.user.service.ContactService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -33,6 +35,7 @@ import java.util.List;
 @Service
 public class ContactServiceImpl implements ContactService {
 
+    private final static Logger logger = LoggerFactory.getLogger(ContactServiceImpl.class);
 
     @Autowired
     UserContactRepository userContactRepository;

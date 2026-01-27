@@ -23,6 +23,8 @@ import org.hcm.lifpay.user.dto.resp.CreateBoltCardResp;
 import org.hcm.lifpay.user.exception.LifpayException;
 import org.hcm.lifpay.user.service.BoltCardService;
 import org.hcm.lifpay.util.BoltCardKeyUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -37,7 +39,7 @@ import java.util.List;
 @Slf4j
 public class BoltCardServiceImpl implements BoltCardService {
 
-
+    private final static Logger logger = LoggerFactory.getLogger(BoltCardServiceImpl.class);
     @Autowired
     private BoltCardRepository boltCardRepository;
 
