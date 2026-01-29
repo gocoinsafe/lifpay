@@ -29,6 +29,7 @@ public enum UserResultEnum {
     DELETE_CONTACT_USER_EXCEPTION_ERR(9018, "删除联系人异常"),
     USER_FROZEN(9019, "用户已被冻结"),
     USER_DELETE(9020, "用户已被注销"),
+    AGREEMENT_EXIT(9021,"无效的协议类型"),
 
     BOLT_CARD_UID_IS_NULL_ERROR(8000, "Bolt card Uid 不能不为空"),
     BOLT_CARD_ALREADY_BOUND_ERROR(8001, "BoltCard already bound"),

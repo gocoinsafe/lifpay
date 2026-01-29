@@ -6,15 +6,20 @@ import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.hcm.lifpay.common.BaseRequest;
 import org.hcm.lifpay.common.BaseResponse;
+import org.hcm.lifpay.user.dto.req.AgreementAgreeReq;
+import org.hcm.lifpay.user.dto.req.AgreementQueryReq;
+import org.hcm.lifpay.user.dto.resp.AgreementListDto;
 import org.hcm.lifpay.user.dto.req.IncludePkRequest;
 import org.hcm.lifpay.user.dto.req.LoginRequest;
 import org.hcm.lifpay.user.dto.resp.LoginResponse;
 import org.hcm.lifpay.user.dto.resp.UserInfoResp;
+import org.hcm.lifpay.user.service.AccountService;
 import org.hcm.lifpay.user.service.UserLoginService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletResponse;
+import javax.validation.Valid;
 
 //import javax.servlet.http.HttpServletResponse;
 
@@ -27,6 +32,9 @@ public class UserController {
 
     @Autowired
     UserLoginService userLoginService;
+
+    @Autowired
+    AccountService accountService;
 
 
     /**
@@ -67,6 +75,32 @@ public class UserController {
     }
 
 
+    @PostMapping(path = "/agreement/list")
+    @ApiOperation(value = "协议l列表")
+    public BaseResponse<AgreementListDto> agreementList(@Valid @RequestBody AgreementQueryReq req){
+        log.info("agreementList req:{}", JSON.toJSONString(req));
+        BaseResponse<AgreementListDto> response = accountService.agreementList(req);
+        log.info("agreementList response: {}", JSON.toJSONString(response));
+        return response;
+    }
+
+    @PostMapping(path = "/agreement/query")
+    @ApiOperation(value = "协议查询")
+    public BaseResponse<AgreementListDto> agreementQuery(@Valid @RequestBody AgreementQueryReq req){
+        log.info("agreementQuery req:{}", JSON.toJSONString(req));
+        BaseResponse<AgreementListDto> response = accountService.agreementQuery(req);
+        log.info("agreementQuery response: {}", JSON.toJSONString(response));
+        return response;
+    }
+
+    @PostMapping(path = "/agreement/agree")
+    @ApiOperation(value = "同意协议")
+    public BaseResponse agreementAgree(@Valid @RequestBody AgreementAgreeReq req){
+        log.info("agreementAgree req:{} ", JSON.toJSONString(req));
+        BaseResponse response = accountService.agreementAgree(req);
+        log.info("agreementAgree response "+ JSON.toJSONString(response));
+        return response;
+    }
 
 
 }
