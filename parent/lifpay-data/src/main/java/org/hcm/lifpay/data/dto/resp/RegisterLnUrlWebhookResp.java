@@ -14,7 +14,7 @@ public class RegisterLnUrlWebhookResp {
     String lnUrl;
 
     @Schema(description = "lightning网络地址")
-    @JsonProperty("Lightning_address")
+    @JsonProperty("lightning_address")
     String lightningAddress;
 
     @Schema(description = "username@app.domain")

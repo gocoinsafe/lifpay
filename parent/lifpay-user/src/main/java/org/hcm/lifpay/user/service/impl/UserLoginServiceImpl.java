@@ -61,8 +61,8 @@ public class UserLoginServiceImpl implements UserLoginService {
     private UserInfoRepository userInfoRepository;
 
 
-//    @Autowired
-//    protected MiscRemoteService miscRemoteService;
+    @Autowired
+    protected MiscRemoteService miscRemoteService;
 
 
     private static final String PASSWORD = "password";

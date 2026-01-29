@@ -7,6 +7,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.hcm.lifpay.common.BaseResponse;
 import org.hcm.lifpay.misc.common.MiscResultEnum;
 import org.hcm.lifpay.misc.common.SmsCodeStatusEnum;
+import org.hcm.lifpay.misc.constant.MiscConstant;
 import org.hcm.lifpay.misc.dao.entity.VerifyCodeDo;
 import org.hcm.lifpay.misc.dao.repository.VerifyCodeRepository;
 import org.hcm.lifpay.misc.dto.req.GetVerifyCodeReq;
@@ -15,6 +16,8 @@ import org.hcm.lifpay.misc.req.InnerGetVerifyCodeReq;
 import org.hcm.lifpay.misc.resp.GetVerifyCodeResp;
 import org.hcm.lifpay.misc.service.SmsService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cloud.context.config.annotation.RefreshScope;
 import org.springframework.stereotype.Service;
 
 import java.util.Date;
@@ -22,11 +25,15 @@ import java.util.List;
 
 @Service
 @Slf4j
+@RefreshScope
 public class SmsServiceImpl implements SmsService {
 
 
     @Autowired
     private VerifyCodeRepository verifyCodeRepository;
+
+    @Value("${misc.sms.environment: test}")
+    private String ENVIRONMENT;
 
 
 
@@ -36,14 +43,13 @@ public class SmsServiceImpl implements SmsService {
         String logPrefix = "smsCodeVerify";
         BaseResponse<GetVerifyCodeResp> result = BaseResponse.success(new GetVerifyCodeResp());
         try {
-//            SysParameter sysParameter = sysParameterDao.getByParamKey("UNIVERSAL_SMS_CODE");
-//            if (sysParameter != null && StringUtils.isNotEmpty(sysParameter.getParamValue())) {
-//                log.info("使用万能验证码={}", sysParameter.getParamValue());
-//                if (sysParameter.getParamValue().equals(request.getCode())) {
-//                    result.getData().setResult(true);
-//                    return result;
-//                }
-//            }
+            if (request.getVerifyCode() != null && StringUtils.isNotEmpty(ENVIRONMENT) && ENVIRONMENT.equals("test")) {
+                log.info("使用万能验证码={}", request.getVerifyCode());
+                if (MiscConstant.SMS_UNIVERSAL_VERIFICATION_CODE.equals(request.getVerifyCode())) {
+                    result.getData().setResult(true);
+                    return result;
+                }
+            }
             // 根据邮箱或者手机号 查询验证码
             LambdaQueryWrapper<VerifyCodeDo> queryWrapper = new LambdaQueryWrapper<VerifyCodeDo>()
                     .eq(VerifyCodeDo:: getContact, request.getContact())

@@ -12,6 +12,8 @@ public interface MiscConstant {
     // 腾讯云短信发送区域
     public static final String SMS_REGION = "ap-singapore";
 
+    //测试环境万能验证码
+    public static final String SMS_UNIVERSAL_VERIFICATION_CODE = "111111";
 
 
 

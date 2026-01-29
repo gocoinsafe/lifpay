@@ -3,6 +3,7 @@ package org.hcm.lifpay.misc.controller.inner;
 
 import com.alibaba.fastjson.JSON;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.extern.slf4j.Slf4j;
 import org.hcm.lifpay.common.BaseResponse;
 import org.hcm.lifpay.misc.dto.req.GetVerifyCodeReq;
@@ -25,7 +26,7 @@ import javax.validation.Valid;
  */
 @Controller
 @RequestMapping(path = "/inner/misc", consumes = "application/json")
-//@Api(value = "短信内部接口", tags = {"短信内部接口"})
+@Tag(name = "短信内部接口")
 @Slf4j
 public class InnerSmsController {
 

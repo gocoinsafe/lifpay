@@ -66,7 +66,9 @@ public class BreezServiceImpl implements BreezService {
 
         try {
             String jsonBody = new ObjectMapper().writeValueAsString(bodyMap);
+            logger.info("breezRegisterLnUrlWebHook.Breez.request: {}", jsonBody);
             String resp = postJson(url, jsonBody);
+            logger.info("breezRegisterLnUrlWebHook.Breez.response: {}", resp);
             ObjectMapper objectMapper = new ObjectMapper();
             if (StringUtils.isNotEmpty(resp)){
                 RegisterLnUrlWebhookResp lnurlResp = objectMapper.readValue(resp, RegisterLnUrlWebhookResp.class);
@@ -81,6 +83,9 @@ public class BreezServiceImpl implements BreezService {
            
         } catch (Exception e) {
             logger.error("Register LNURL webhook failed", e);
+            response.setCode(DataResultEnum.REGISTER_BREEZ_API_ERROR.getCode());
+            response.setMessage(DataResultEnum.REGISTER_BREEZ_API_ERROR.getDesc());
+            return response;
         }
         return response;
     }
@@ -102,7 +107,7 @@ public class BreezServiceImpl implements BreezService {
 
         try {
             String jsonBody = new ObjectMapper().writeValueAsString(bodyMap);
-
+            logger.info("breezUnregisterLnUrlWebHook.Breez.request: {}", jsonBody);
             RequestBody body = RequestBody.create(JSON, jsonBody);
 
             Request httpRequest = new Request.Builder()
@@ -147,7 +152,7 @@ public class BreezServiceImpl implements BreezService {
         try {
             // 将 Map 转为 JSON 字符串
             String jsonBody = new ObjectMapper().writeValueAsString(bodyMap);
-
+            logger.info("breezLnurlPayRecover.Breez.request: {}", jsonBody);
             RequestBody body = RequestBody.create(JSON, jsonBody);
 
             Request httpRequest = new Request.Builder()
@@ -274,6 +279,7 @@ public class BreezServiceImpl implements BreezService {
 
         try (Response response = CLIENT.newCall(request).execute()) {
             if (!response.isSuccessful()) {
+
                 logger.error("HTTP " + response);
                 throw new RuntimeException("HTTP " + response.code());
             }

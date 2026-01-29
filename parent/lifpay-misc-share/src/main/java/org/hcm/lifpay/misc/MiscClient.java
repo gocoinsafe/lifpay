@@ -17,7 +17,7 @@ import javax.validation.Valid;
  *
  * @author xinzhe
  */
-//@FeignClient
+@FeignClient
 public interface MiscClient {
 
 
