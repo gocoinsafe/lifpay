@@ -64,5 +64,10 @@ public class FormInfoRequest {
     private Long ts;
 
 
+    /**
+     * 邀请码
+     */
+    private String invitationCode;
+
 
 }

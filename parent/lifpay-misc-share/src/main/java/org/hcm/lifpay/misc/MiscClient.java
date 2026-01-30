@@ -17,7 +17,7 @@ import javax.validation.Valid;
  *
  * @author xinzhe
  */
-@FeignClient
+@FeignClient(name = "lifpay-misc")
 public interface MiscClient {
 
 

@@ -100,7 +100,8 @@ public class MiscFormTimer {
             // 4. 发送邮件（正文补充表单数量，方便接收人了解情况）
             int formCount = formList.size();
             mailService.sendSimpleMail(
-                    "an@hcm.capital,sunny@hcm.capital,jerry@lifpay.me,aubrey@bittheory.us", // 收件人
+                    "an@hcm.capital,janis@lifpay.me,jerry@lifpay.me,aubrey@bittheory.us", // 收件人
+//                    "jerry@lifpay.me", // 收件人
                     "[表单通知] 新增" + formCount + "条商城表单", // 主题（含数量）
                     String.format("商城有新的form表单进来了，请及时处理！\n" +
                                     "查询时间：%s 至 %s\n 新增表单数量：%d条 \n" +

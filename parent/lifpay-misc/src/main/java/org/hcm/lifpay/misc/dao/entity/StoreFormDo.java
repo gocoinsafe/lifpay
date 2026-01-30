@@ -98,6 +98,13 @@ public class StoreFormDo extends BaseEntity implements Serializable {
     private String country;
 
     /**
+     * 邀请码
+     */
+
+    @TableField("invitation_code")
+    private String invitationCode;
+
+    /**
      * 邮政编码
      */
 
