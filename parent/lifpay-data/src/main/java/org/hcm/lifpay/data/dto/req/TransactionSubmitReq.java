@@ -1,7 +1,6 @@
-package org.hcm.lifpay.user.dto.req;
+package org.hcm.lifpay.data.dto.req;
 
 
-import io.swagger.annotations.ApiModelProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 import org.hcm.lifpay.common.BaseRequest;

@@ -1,30 +1,26 @@
-package org.hcm.lifpay.user.controller;
+package org.hcm.lifpay.data.controller;
 
 
 import com.alibaba.fastjson.JSON;
-import io.swagger.annotations.ApiOperation;
+import io.swagger.v3.oas.annotations.Operation;
 import lombok.extern.slf4j.Slf4j;
+import org.hcm.lifpay.common.BaseRequest;
 import org.hcm.lifpay.common.BaseResponse;
 import org.hcm.lifpay.common.CommonPage;
-import org.hcm.lifpay.user.dto.req.ContactListReq;
-import org.hcm.lifpay.user.dto.req.TransactionSubmitReq;
-import org.hcm.lifpay.user.dto.resp.ContactListResp;
-import org.hcm.lifpay.user.dto.resp.TransactionListResp;
-import org.hcm.lifpay.user.service.TransactionService;
+import org.hcm.lifpay.data.dto.req.TransactionListReq;
+import org.hcm.lifpay.data.dto.req.TransactionSubmitReq;
+import org.hcm.lifpay.data.dto.resp.TransactionListResp;
+import org.hcm.lifpay.data.service.TransactionService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping(path = "/api/user/", consumes = "application/json")
+@RequestMapping(path = "/api/data/", consumes = "application/json")
 @Slf4j
-public class UserTransactionController {
-
-
+public class TransactionController {
 
     @Autowired
     TransactionService transactionService;
-
-
 
 
     /**
@@ -34,7 +30,7 @@ public class UserTransactionController {
      * @return 响应
      */
     @PostMapping(path = "/transaction/submit")
-    @ApiOperation(value = "上报交易记录", notes = "上报交易记录")
+    @Operation(summary = "上报交易记录")
     public @ResponseBody BaseResponse<?> transactionSubmit(@RequestBody TransactionSubmitReq request) {
         log.info("transactionSubmit request: " + JSON.toJSONString(request));
         BaseResponse<?> response = transactionService.transactionSubmit(request);
@@ -51,16 +47,13 @@ public class UserTransactionController {
      * @return 响应
      */
     @PostMapping(path = "/transaction/list")
-    @ApiOperation(value = "查询交易记录列表", notes = "查询交易记录列表")
-    public @ResponseBody BaseResponse<CommonPage<TransactionListResp>> transactionList(@RequestBody ContactListReq request) {
+    @Operation(summary = "查询交易记录列表")
+    public @ResponseBody BaseResponse<CommonPage<TransactionListResp>> transactionList(@RequestBody TransactionListReq request) {
         log.info("transactionList request: " + JSON.toJSONString(request));
         BaseResponse<CommonPage<TransactionListResp>> response = transactionService.transactionList(request);
         log.info("transactionList response: " + JSON.toJSONString(response));
         return response;
     }
-
-
-
 
 
 

@@ -1,4 +1,4 @@
-package org.hcm.lifpay.user.dao.entity;
+package org.hcm.lifpay.data.dao.entity;
 
 
 import com.baomidou.mybatisplus.annotation.IdType;

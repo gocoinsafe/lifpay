@@ -1,20 +1,19 @@
-package org.hcm.lifpay.user.service.impl;
+package org.hcm.lifpay.data.service.impl;
 
 
 import cn.hutool.core.collection.CollectionUtil;
 import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import org.hcm.lifpay.common.BaseRequest;
 import org.hcm.lifpay.common.BaseResponse;
 import org.hcm.lifpay.common.CommonPage;
-import org.hcm.lifpay.user.dao.entity.UserContactDo;
-import org.hcm.lifpay.user.dao.entity.UserTransactionDo;
-import org.hcm.lifpay.user.dao.repository.UserTransactionRepository;
-import org.hcm.lifpay.user.dto.req.ContactListReq;
-import org.hcm.lifpay.user.dto.req.TransactionSubmitReq;
-import org.hcm.lifpay.user.dto.resp.ContactListResp;
-import org.hcm.lifpay.user.dto.resp.TransactionListResp;
-import org.hcm.lifpay.user.service.TransactionService;
+import org.hcm.lifpay.data.dao.entity.UserTransactionDo;
+import org.hcm.lifpay.data.dao.repository.UserTransactionRepository;
+import org.hcm.lifpay.data.dto.req.TransactionListReq;
+import org.hcm.lifpay.data.dto.req.TransactionSubmitReq;
+import org.hcm.lifpay.data.dto.resp.TransactionListResp;
+import org.hcm.lifpay.data.service.TransactionService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -65,7 +64,7 @@ public class TransactionServiceImpl implements TransactionService {
 
 
     @Override
-    public BaseResponse<CommonPage<TransactionListResp>> transactionList(ContactListReq request) {
+    public BaseResponse<CommonPage<TransactionListResp>> transactionList(TransactionListReq request) {
         logger.info("transactionList.req:{}",JSON.toJSONString(request));
 
         BaseResponse<CommonPage<TransactionListResp>> response = new BaseResponse<>();

@@ -1,4 +1,4 @@
-package org.hcm.lifpay.user.dto.resp;
+package org.hcm.lifpay.data.dto.resp;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
