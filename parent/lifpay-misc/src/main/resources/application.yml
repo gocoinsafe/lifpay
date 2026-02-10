@@ -59,7 +59,7 @@ spring:
     # 3. 发送者邮箱账号（你的邮箱）
     username: support@lifpay.me
     # 4. 授权码
-    password: iXfrvGY7LvuMXuv9
+    password: Jx35Fj8imd8KD7Br
     # 5. 加密方式（SSL 加密，必填，否则连接失败）
     properties:
       mail:
