@@ -2,10 +2,10 @@ FROM adoptopenjdk/openjdk8:jdk8u362-b09
 WORKDIR /app
 
 COPY target/*.jar /app/
-RUN if [ -z "$(ls /app/*.jar 2>/dev/null)"  ]; then \
-    echo "ERROR: 未找到 Jar 包！"; \
-    exit 1; \
-    fi
+
+RUN ls -l /app/
+
+RUN mv $(ls -S /app/*.jar | head -1) /app/app.jar
 
 ENV TZ=Asia/Shanghai
 ENV JAVA_OPTS="-Dfile.encoding=utf8 -Djava.security.egd=file:/dev/.urandom"
