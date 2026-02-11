@@ -31,6 +31,7 @@ pipeline {
         stage('构建镜像') {
             steps {
                 dir("parent/${SERVICE_NAME}") {
+                sh "docker rmi ${IMAGE_NAME} || true"
                 sh "docker build -t ${IMAGE_NAME} ."
                 }
             }
@@ -61,7 +62,6 @@ pipeline {
             // 失败时打印容器日志，方便排查
             sh "docker logs ${SERVICE_NAME} || true"
         }
-        // 可选：无论成功失败，清理临时资源（根据需求调整）
 
     }
 
