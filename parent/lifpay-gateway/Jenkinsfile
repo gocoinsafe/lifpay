@@ -1,0 +1,66 @@
+pipeline {
+    agent any
+    environment {
+    SERVICCE_NAME = "lifpay-gateway"
+    IMAGE_TAG = "${BUILD_NUMBER}"
+    IMAGE_NAME = "${SERVICE_NAME}:${IMAGE_TAG}"
+    PORT_MAPPING = “9001:9001”
+    }
+
+    stages {
+        stage('拉取代码') {
+            steps {
+                checkout scm
+            }
+        }
+
+        stage('Maven打包') {
+            steps {
+                dir("parent") {
+                    sh "mvn clean package -pl ${SERVICE_NAME} -am -DskipTests"
+                }
+            }
+        }
+
+        stage('构建镜像') {
+            steps {
+                dir("parent/${SERVICE_NAME}") {
+                sh "docker build -t ${IMAGE_NAME} ."
+                }
+            }
+        }
+
+        // 推送镜像（暂时忽略）
+
+       stage('启动容器') {
+            steps {
+                sh "docker stop ${SERVICE_NAME} || true"
+                sh "docker rm ${SERVICE_NAME} || true"
+
+                sh "docker run -d --name ${SERVICE_NAME} -p ${PORT_MAPPING} ${IMAGE_NAME}"
+            }
+
+
+       }
+
+    }
+
+    post {
+        success {
+            echo "===== 流水线执行成功！服务已部署成功 ====="
+            sh 'echo "容器名：${SERVICE_NAME} | 镜像名：${IMAGE_NAME} | 访问端口：${PORT_MAPPING%:*}"'
+        }
+        failure {
+            echo "===== 流水线执行失败！====="
+            // 失败时打印容器日志，方便排查
+            sh "docker logs ${SERVICE_NAME} || true"
+        }
+        // 可选：无论成功失败，清理临时资源（根据需求调整）
+        always {
+            echo "清理构建临时文件"
+            sh 'rm -rf ${BUILD_DIR}'
+        }
+    }
+
+
+}
