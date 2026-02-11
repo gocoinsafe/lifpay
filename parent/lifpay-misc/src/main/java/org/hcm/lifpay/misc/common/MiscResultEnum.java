@@ -15,7 +15,7 @@ public enum MiscResultEnum {
     /**
      * 成功
      */
-    SUCCESS(0, "Success","成功"),
+    SUCCESS(200, "Success","成功"),
     /**
      * 参数错误
      */

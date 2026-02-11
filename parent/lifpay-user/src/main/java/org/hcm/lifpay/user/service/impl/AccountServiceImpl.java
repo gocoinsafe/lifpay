@@ -157,34 +157,34 @@ public class AccountServiceImpl implements AccountService {
         // 根据用户id和 协议id 查询用户是否有通过操作
         LambdaQueryWrapper<AuthAgreementDo> queryAuthAgreementWrapper = new LambdaQueryWrapper<AuthAgreementDo>()
                 .eq(AuthAgreementDo::getUserId, req.getUserId())
-                .eq(AuthAgreementDo::getServiceTermsId,serviceTermsDO.getId());
+                .eq(AuthAgreementDo::getServiceTermsId,serviceTermsDO.getId())
+                .orderByDesc(AuthAgreementDo::getCreateTime);
 
         List<AuthAgreementDo> authInfoList = authAgreementRepository.selectList(queryAuthAgreementWrapper);
-        if (CollectionUtil.isEmpty(authInfoList)){
-            logger.info("Agreed, repeated agreed");
-            return response;
-        }
-        AuthAgreementDo authInfo = authInfoList.get(0);
-        if (null != authInfo && authInfo.getIsAgree().equals(Constant.IsAgree.AGREE)){
-            logger.info("Agreed, repeated agreed");
-            return response;
-        }
-
-        if (null != authInfo && authInfo.getIsAgree().equals(Constant.IsAgree.NOT_AGREE)){
+        if (CollectionUtil.isNotEmpty(authInfoList)){
+            AuthAgreementDo authInfo = authInfoList.get(0);
+            if (null != authInfo && authInfo.getIsAgree().equals(Constant.IsAgree.AGREE)){
+                logger.info("Agreed, repeated agreed");
+                return response;
+            }
             // 补充逻辑 用户存在但同意状态为未同意 应该更改同意的状态
             authInfo.setIsAgree(Constant.IsAgree.AGREE);
             authInfo.setUpdateTime(System.currentTimeMillis());
             authAgreementRepository.updateById(authInfo);
-        }else {
-            // 添加用户同意的信息到数据库
-            AuthAgreementDo authAgreementDO = new AuthAgreementDo();
-            authAgreementDO.setServiceTermsId(serviceTermsDO.getId());
-            authAgreementDO.setUserId(req.getUserId());
-            authAgreementDO.setDeviceId(req.getDeviceId());
-            authAgreementDO.setIsAgree(Constant.IsAgree.AGREE);
-            authAgreementDO.setCreateTime(System.currentTimeMillis());
-            authAgreementRepository.insert(authAgreementDO);
+
+            response.setCode(UserResultEnum.SUCCESS.getCode());
+            response.setMessage(UserResultEnum.SUCCESS.getMsg());
+            return response;
         }
+        // 添加用户同意的信息到数据库
+        AuthAgreementDo authAgreementDO = new AuthAgreementDo();
+        authAgreementDO.setServiceTermsId(serviceTermsDO.getId());
+        authAgreementDO.setUserId(req.getUserId());
+        authAgreementDO.setDeviceId(req.getDeviceId());
+        authAgreementDO.setIsAgree(Constant.IsAgree.AGREE);
+        authAgreementDO.setCreateTime(System.currentTimeMillis());
+        authAgreementRepository.insert(authAgreementDO);
+
         response.setCode(UserResultEnum.SUCCESS.getCode());
         response.setMessage(UserResultEnum.SUCCESS.getMsg());
         return response;

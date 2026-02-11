@@ -26,7 +26,7 @@ public class AgreementQueryDto {
     @Schema(description = "协议类型")
     private String type;
 
-    @Schema(description = "是否已同意")
+    @Schema(description = "是否已同意(协议列表获取时忽略此字段)")
     private boolean isAgree;
 
 }

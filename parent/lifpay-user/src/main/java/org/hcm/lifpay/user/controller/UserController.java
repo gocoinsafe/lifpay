@@ -76,7 +76,7 @@ public class UserController {
 
 
     @PostMapping(path = "/agreement/list")
-    @ApiOperation(value = "协议l列表")
+    @ApiOperation(value = "协议列表")
     public BaseResponse<AgreementListDto> agreementList(@Valid @RequestBody AgreementQueryReq req){
         log.info("agreementList req:{}", JSON.toJSONString(req));
         BaseResponse<AgreementListDto> response = accountService.agreementList(req);

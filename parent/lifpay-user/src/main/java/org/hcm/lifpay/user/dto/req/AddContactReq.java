@@ -13,11 +13,11 @@ public class AddContactReq extends BaseRequest {
     @Schema(description = "联系人Id，创建时不传")
     private Long id;
 
-    @Schema(description = "联系人姓名")
+    @Schema(description = "联系人姓名", required = true)
     private String contactName;
 
 
-    @Schema(description = "Lightning地址")
+    @Schema(description = "Lightning地址", required = true)
     private String address;
 
 

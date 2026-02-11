@@ -8,7 +8,7 @@ package org.hcm.lifpay.user.dto;
  */
 public enum UserResultEnum {
 
-    SUCCESS(0, "success"),
+    SUCCESS(200, "success"),
     SYSTEM_INTERNAL_ERROR(9000, "System internal error"),
     BAD_INPUT(9001, "Missing mandatory attributes."),
     BAD_COMBINATION(9002, "Bad account or password."),
