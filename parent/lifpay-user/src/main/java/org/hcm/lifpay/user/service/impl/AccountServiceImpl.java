@@ -165,6 +165,8 @@ public class AccountServiceImpl implements AccountService {
             AuthAgreementDo authInfo = authInfoList.get(0);
             if (null != authInfo && authInfo.getIsAgree().equals(Constant.IsAgree.AGREE)){
                 logger.info("Agreed, repeated agreed");
+                response.setCode(UserResultEnum.AGREED_REPEATED_AGREED.getCode());
+                response.setMessage(UserResultEnum.AGREED_REPEATED_AGREED.getMsg());
                 return response;
             }
             // 补充逻辑 用户存在但同意状态为未同意 应该更改同意的状态

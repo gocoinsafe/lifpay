@@ -30,6 +30,9 @@ public enum UserResultEnum {
     USER_FROZEN(9019, "用户已被冻结"),
     USER_DELETE(9020, "用户已被注销"),
     AGREEMENT_EXIT(9021,"无效的协议类型"),
+    AGREED_REPEATED_AGREED(9022,"该用户已同意过协议，现为反复同意"),
+
+
 
     BOLT_CARD_UID_IS_NULL_ERROR(8000, "Bolt card Uid 不能不为空"),
     BOLT_CARD_ALREADY_BOUND_ERROR(8001, "BoltCard already bound"),
