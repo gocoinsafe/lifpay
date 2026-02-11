@@ -1,7 +1,7 @@
 pipeline {
     agent any
     environment {
-    SERVICCE_NAME = "lifpay-gateway"
+    SERVICE_NAME = "lifpay-gateway"
     IMAGE_TAG = "${BUILD_NUMBER}"
     IMAGE_NAME = "${SERVICE_NAME}:${IMAGE_TAG}"
     PORT_MAPPING = "9001:9001"
