@@ -1,7 +1,7 @@
 FROM adoptopenjdk/openjdk8:jdk8u362-b09
 WORKDIR /app
 
-COPY target/*.jar /app/app.jar
+COPY target/lifpay-gateway-1.0-SNAPSHOT.jar /app/app.jar
 
 ENV TZ=Asia/Shanghai
 ENV JAVA_OPTS="-Dfile.encoding=utf8 -Djava.security.egd=file:/dev/.urandom"
