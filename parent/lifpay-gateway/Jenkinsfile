@@ -1,5 +1,11 @@
 pipeline {
     agent any
+
+    tools {
+        maven 'maven-3.8'
+    }
+
+
     environment {
     SERVICE_NAME = "lifpay-gateway"
     IMAGE_TAG = "${BUILD_NUMBER}"
