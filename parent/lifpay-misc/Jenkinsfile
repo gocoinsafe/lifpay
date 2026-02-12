@@ -1,0 +1,98 @@
+pipeline {
+    agent any
+
+    tools {
+        maven 'maven-3.8'
+    }
+
+
+    environment {
+    SERVICE_NAME = "lifpay-misc"
+    IMAGE_TAG = "v1.0"
+    IMAGE_NAME = "${SERVICE_NAME}:${IMAGE_TAG}"
+    PORT_MAPPING = "9012:9012"
+    //定义构建目录，方便清理
+    BUILD_DIR = "${WORKSPACE}/parent/${SERVICE_NAME}"
+
+    }
+
+    stages {
+        stage('前置清理') {
+            steps {
+                echo "===========开始清理历史构建资源============="
+                sh "docker stop \$(docker ps -a -q --filter name=${SERVICE_NAME}) || true"
+                sh "docker rm \$(docker ps -a -q --filter name=${SERVICE_NAME}) || true"
+
+                sh "docker rmi \$(docker images -q ${SERVICE_NAME}) || true"
+
+                sh "docker rmi \$(docker images -f 'dangling=true' -q) || true"
+
+                sh "rm -rf ${BUILD_DIR}/target || true"
+                sh "rm -rf ${WORKSPACE}/parent/target || true"
+
+                sh "rm -rf ${WORKSPACE}/@tmp || true"
+
+                echo "=============历史资源清理完成==============="
+
+            }
+        }
+
+
+        stage('拉取代码') {
+            steps {
+                checkout scm
+            }
+        }
+
+        stage('Maven打包') {
+            steps {
+                dir("parent") {
+                    sh "mvn clean package -pl ${SERVICE_NAME} -am -DskipTests"
+                }
+            }
+        }
+
+        stage('构建镜像') {
+            steps {
+                dir("parent/${SERVICE_NAME}") {
+                sh "docker rmi ${IMAGE_NAME} || true"
+                sh "docker build -t ${IMAGE_NAME} ."
+                }
+            }
+        }
+
+        // 推送镜像（暂时忽略）
+
+       stage('启动容器') {
+            steps {
+                sh "docker stop ${SERVICE_NAME} || true"
+                sh "docker rm ${SERVICE_NAME} || true"
+
+                sh "docker run -d --name ${SERVICE_NAME} -p ${PORT_MAPPING} ${IMAGE_NAME}"
+            }
+
+
+       }
+
+    }
+
+    post {
+        success {
+            echo "===== 流水线执行成功！服务已部署成功 ====="
+            sh 'echo "容器名：${SERVICE_NAME} | 镜像名：${IMAGE_NAME} | 访问端口：${PORT_MAPPING%:*}"'
+        }
+        failure {
+            echo "===== 流水线执行失败！====="
+            // 失败时打印容器日志，方便排查
+            sh "docker logs ${SERVICE_NAME} || true"
+        }
+        always {
+            echo "===== 执行最终清理 ====="
+            sh "rm -rf ${WORKSPACE}/parent/${SERVICE_NAME}/tmp || true"
+            sh '''df -h | grep -E '(/$|/var/lib/docker)' || true'''
+        }
+
+    }
+
+
+}
