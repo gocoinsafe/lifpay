@@ -8,12 +8,36 @@ pipeline {
 
     environment {
     SERVICE_NAME = "lifpay-gateway"
-    IMAGE_TAG = "${BUILD_NUMBER}"
+    IMAGE_TAG = "v1.0"
     IMAGE_NAME = "${SERVICE_NAME}:${IMAGE_TAG}"
     PORT_MAPPING = "9001:9001"
+    //定义构建目录，方便清理
+    BUILD_DIR = "${WORKSPACE}/parent/${SERVICE_NAME}"
+
     }
 
     stages {
+        stage('前置清理') {
+            steps {
+                echo "===========开始清理历史构建资源============="
+                sh "docker stop \$(docker ps -a -q --filter name=${SERVICE_NAME}) || true"
+                sh "docker rm \$(docker ps -a -q --filter name=${SERVICE_NAME}) || true"
+
+                sh "docker rmi \$(docker images -q ${SERVICE_NAME}) || true"
+
+                sh "docker rmi \$(docker images -f 'dangling=true' -q) || true"
+
+                sh "rm -rf ${BUILD_DIR}/target || true"
+                sh "rm -rf ${WORKSPACE}/parent/target || true"
+
+                sh "rm -rf ${WORKSPACE}/@tmp || true"
+
+                echo "=============历史资源清理完成==============="
+
+            }
+        }
+
+
         stage('拉取代码') {
             steps {
                 checkout scm
@@ -61,6 +85,11 @@ pipeline {
             echo "===== 流水线执行失败！====="
             // 失败时打印容器日志，方便排查
             sh "docker logs ${SERVICE_NAME} || true"
+        }
+        always {
+            echo "===== 执行最终清理 ====="
+            sh "rm -rf ${WORKSPACE}/parent/${SERVICE_NAME}/tmp || true"
+            sh "df -h | grep -E '(/$|/var/lib/docker)' || true"
         }
 
     }
