@@ -1,6 +1,8 @@
 pipeline {
     agent any
-
+    options {
+        skipDefaultCheckout()
+    }
     tools {
         maven 'maven-3.8'
     }
@@ -105,6 +107,7 @@ pipeline {
         }
         always {
             echo "===== 执行最终清理 ====="
+            sh "rm -rf ${SHARED_WS}/parent/${SERVICE_NAME}/target || true"
             sh "rm -rf ${SHARED_WS}/parent/${SERVICE_NAME}/tmp || true"
             sh '''df -h | grep -E '(/$|/var/lib/docker)' || true'''
         }
