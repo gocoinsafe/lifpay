@@ -11,52 +11,69 @@ pipeline {
     IMAGE_TAG = "v1.0"
     IMAGE_NAME = "${SERVICE_NAME}:${IMAGE_TAG}"
     PORT_MAPPING = "9012:9012"
+    SHARED_WS = "/var/jenkins_home/workspace/lifpay-shared-workspace"
     //定义构建目录，方便清理
-    BUILD_DIR = "${WORKSPACE}/parent/${SERVICE_NAME}"
-
+    BUILD_DIR = "${SHARED_WS}/parent/${SERVICE_NAME}"
     }
 
     stages {
         stage('前置清理') {
             steps {
-                echo "===========开始清理历史构建资源============="
-                sh "docker stop \$(docker ps -a -q --filter name=${SERVICE_NAME}) || true"
-                sh "docker rm \$(docker ps -a -q --filter name=${SERVICE_NAME}) || true"
+                ws("${SHARED_WS}") {
+                    echo "当前工作空间：${pwd()}"
+                    echo "===========开始清理历史构建资源============="
+                    sh "docker stop \$(docker ps -a -q --filter name=${SERVICE_NAME}) || true"
+                    sh "docker rm \$(docker ps -a -q --filter name=${SERVICE_NAME}) || true"
 
-                sh "docker rmi \$(docker images -q ${SERVICE_NAME}) || true"
+                    sh "docker rmi \$(docker images -q ${SERVICE_NAME}) || true"
 
-                sh "docker rmi \$(docker images -f 'dangling=true' -q) || true"
+                    sh "docker rmi \$(docker images -f 'dangling=true' -q) || true"
 
-                sh "rm -rf ${BUILD_DIR}/target || true"
-                sh "rm -rf ${WORKSPACE}/parent/target || true"
+                    sh "rm -rf ${BUILD_DIR}/target || true"
+                    sh "rm -rf ${SHARED_WS}/parent/target || true"
 
-                sh "rm -rf ${WORKSPACE}/@tmp || true"
+                    sh "rm -rf ${SHARED_WS}/@tmp || true"
 
-                echo "=============历史资源清理完成==============="
+                    echo "=============历史资源清理完成==============="
+
+                }
+
 
             }
         }
 
-
-        stage('拉取代码') {
+        // 新增：验证共享工作空间有效性（提前发现代码缺失问题）
+        stage('验证共享工作空间') {
             steps {
-                checkout scm
+                ws("${SHARED_WS}") {
+                    echo "验证${SERVICE_NAME}模块是否存在..."
+                    // 目录不存在则终止流水线，避免后续白跑
+                    sh "ls -l ${BUILD_DIR} || (echo '共享工作空间中未找到${SERVICE_NAME}模块' && exit 1)"
+                }
             }
         }
+
 
         stage('Maven打包') {
             steps {
-                dir("parent") {
-                    sh "mvn clean package -pl ${SERVICE_NAME} -am -DskipTests"
+                ws("${SHARED_WS}") {
+                    dir("parent") {
+                        sh "mvn clean package -pl ${SERVICE_NAME} -am -DskipTests"
+                    }
+
                 }
+
             }
         }
 
         stage('构建镜像') {
             steps {
-                dir("parent/${SERVICE_NAME}") {
-                sh "docker rmi ${IMAGE_NAME} || true"
-                sh "docker build -t ${IMAGE_NAME} ."
+                ws("${SHARED_WS}") {
+                    dir("parent/${SERVICE_NAME}") {
+                    sh "docker rmi ${IMAGE_NAME} || true"
+                    sh "docker build -t ${IMAGE_NAME} ."
+                }
+
                 }
             }
         }
@@ -88,7 +105,7 @@ pipeline {
         }
         always {
             echo "===== 执行最终清理 ====="
-            sh "rm -rf ${WORKSPACE}/parent/${SERVICE_NAME}/tmp || true"
+            sh "rm -rf ${SHARED_WS}/parent/${SERVICE_NAME}/tmp || true"
             sh '''df -h | grep -E '(/$|/var/lib/docker)' || true'''
         }
 
