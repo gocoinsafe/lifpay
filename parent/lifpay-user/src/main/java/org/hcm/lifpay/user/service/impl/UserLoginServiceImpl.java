@@ -236,6 +236,7 @@ public class UserLoginServiceImpl implements UserLoginService {
             userInfo.setUsername(userInfoDO.getName());
             userInfo.setEmail(userInfoDO.getEmail());
             userInfo.setTelephone(userInfoDO.getTelephone());
+            userInfo.setLightning(userInfoDO.getLightning());
             userInfo.setStatus(userInfoDO.getStatus());
             userInfo.setIconUrl(userInfoDO.getIconUrl());
             userInfo.setUserType(userInfoDO.getUserType());
@@ -267,7 +268,7 @@ public class UserLoginServiceImpl implements UserLoginService {
             userInfoDo.setTelephone(contact);
             userInfoDo.setName(RegularExpressionUtil.extractMobileLast4(contact));
         }
-
+        userInfoDo.setLightning(userInfoDo.getName()+"@https://test.lifpay.me");
         userInfoDo.setPassword(encryptPwd);
         userInfoDo.setUserType(UserTypeEnum.PERSON.getType());
         userInfoDo.setStatus(UserStatusEnum.NORMAL.getType());
