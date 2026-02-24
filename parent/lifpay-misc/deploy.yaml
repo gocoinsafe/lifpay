@@ -23,6 +23,17 @@ spec:
         - name: lifpay-misc
           image: lifpay-misc:v1.0
           imagePullPolicy: Never
+          env:
+            - name: NACOS_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: nacos-auth-secret
+                  key: nacos-username
+            - name: NACOS_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: nacos-auth-secret
+                  key: nacos-password
           ports:
             - containerPort: 9012
           livenessProbe:
