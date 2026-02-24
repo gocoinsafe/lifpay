@@ -81,7 +81,7 @@ pipeline {
                     sh '''
                     kubectl apply --dry-run=client -f deploy.yaml -n ${NAMESPACE}
                     kubectl apply -f deploy.yaml -n ${NAMESPACE}
-                    kubectl rollout status deployment/${APP_NAME} -n ${NAMESPACE} --timeout=120
+                    kubectl rollout status deployment/${APP_NAME} -n ${NAMESPACE} --timeout=120s
                     kubectl get pods -n ${NAMESPACE} -l app=${APP_NAME}
                     kubectl get svc -n ${NAMESPACE} ${APP_NAME}-service
                     '''
