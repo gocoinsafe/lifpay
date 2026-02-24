@@ -1,0 +1,59 @@
+# deploy.yaml（项目根目录）
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: lifpay-user
+  namespace: lifpay-test
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: lifpay-user
+  strategy:
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        app: lifpay-user
+    spec:
+      containers:
+        - name: lifpay-user
+          image: lifpay-user:v1.0
+          imagePullPolicy: Never
+          ports:
+            - containerPort: 9005
+          livenessProbe:
+            tcpSocket:
+              port: 9005
+            initialDelaySeconds: 30
+            periodSeconds: 5
+            timeoutSeconds: 3
+            failureThreshold: 3
+          readinessProbe:
+            tcpSocket:
+              port: 9005
+            initialDelaySeconds: 20
+            periodSeconds: 3
+            timeoutSeconds: 2
+            failureThreshold: 3
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: lifpay-user-service
+  namespace: lifpay-test
+  labels:
+    app: lifpay-user
+spec:
+  type: NodePort
+  ports:
+    - port: 9005
+      targetPort: 9005
+      nodePort: 30905
+      protocol: TCP
+      name: http
+  selector:
+    app: lifpay-user

@@ -20,8 +20,8 @@ pipeline {
             steps {
                 echo "==================开始清理历史构建资源===================="
                  sh '''
-                    # 重启Deployment，触发Pod重建
-                    kubectl rollout restart deployment ${APP_NAME} -n ${NAMESPACE} || true
+                    #删除旧的Deployment
+                    kubectl delete deployment ${APP_NAME} -n ${NAMESPACE} || true
                     # 清理集群内终止形态的旧Pod
                     kubectl delete pod -n ${NAMESPACE} --field-selector=status.phase=Failed || true
                     kubectl delete pod -n ${NAMESPACE} --field-selector=status.phase=Succeeded || true

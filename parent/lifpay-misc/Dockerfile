@@ -3,8 +3,6 @@ WORKDIR /app
 
 COPY target/*.jar /app/
 
-RUN ls -l /app/
-
 RUN mv $(ls -S /app/*.jar | head -1) /app/app.jar
 
 ENV TZ=Asia/Shanghai

@@ -1,93 +1,91 @@
 pipeline {
     agent any
-    options {
-        skipDefaultCheckout()
-    }
     tools {
         maven 'maven-3.8'
     }
 
 
     environment {
-    SERVICE_NAME = "lifpay-user"
+    APP_NAME = "lifpay-user"
     IMAGE_TAG = "v1.0"
-    IMAGE_NAME = "${SERVICE_NAME}:${IMAGE_TAG}"
-    PORT_MAPPING = "9005:9005"
-    SHARED_WS = "/var/jenkins_home/workspace/lifpay-shared-workspace"
+    IMAGE_NAME = "${APP_NAME}:${IMAGE_TAG}"
+    PORT = 9005
+    NAMESPACE = "lifpay-test"
     //定义构建目录，方便清理
-    BUILD_DIR = "${SHARED_WS}/parent/${SERVICE_NAME}"
+    BUILD_DIR = "${WORKSPACE}/parent/${APP_NAME}"
     }
 
     stages {
         stage('前置清理') {
             steps {
-                ws("${SHARED_WS}") {
-                    echo "当前工作空间：${pwd()}"
-                    echo "===========开始清理历史构建资源============="
-                    sh "docker stop \$(docker ps -a -q --filter name=${SERVICE_NAME}) || true"
-                    sh "docker rm \$(docker ps -a -q --filter name=${SERVICE_NAME}) || true"
-
-                    sh "docker rmi \$(docker images -q ${SERVICE_NAME}) || true"
-
-                    sh "docker rmi \$(docker images -f 'dangling=true' -q) || true"
-
-                    sh "rm -rf ${BUILD_DIR}/target || true"
-                    sh "rm -rf ${SHARED_WS}/parent/target || true"
-
-                    sh "rm -rf ${SHARED_WS}/@tmp || true"
-
-                    echo "=============历史资源清理完成==============="
-
-                }
-
-
+                echo "==================开始清理历史构建资源===================="
+                 sh '''
+                    #删除旧的Deployment
+                    kubectl delete deployment ${APP_NAME} -n ${NAMESPACE} || true
+                    # 清理集群内终止形态的旧Pod
+                    kubectl delete pod -n ${NAMESPACE} --field-selector=status.phase=Failed || true
+                    kubectl delete pod -n ${NAMESPACE} --field-selector=status.phase=Succeeded || true
+                 '''
+                 // 清理本地构建产物
+                sh "rm -rf ${BUILD_DIR}/target || true"
+                sh "rm -rf ${WORKSPACE}/parent/target || true"
+                sh "rm -rf ${WORKSPACE}/@tmp || true"
+                // 清理docker冗余资源
+                sh '''
+                    # 停止并删除所有关联容器
+                    docker stop $(docker ps -a -q --filter name=${APP_NAME}) || true
+                    docker rm $(docker ps -a -q --filter name=${APP_NAME}) || true
+                    # 删除当前镜像
+                    docker rmi -f ${IMAGE_NAME} || true
+                    # 清理虚悬镜像
+                    docker rmi -f $(docker images -f "dangling=true" -q) || true
+                    # 清理该应用的历史版本镜像
+                    docker rmi -f $(docker images -q ${APP_NAME}) || true
+                '''
+                echo "===================历史资源清理完成======================"
             }
         }
 
-        // 新增：验证共享工作空间有效性（提前发现代码缺失问题）
-        stage('验证共享工作空间') {
+
+        stage('拉取代码') {
             steps {
-                ws("${SHARED_WS}") {
-                    echo "验证${SERVICE_NAME}模块是否存在..."
-                    // 目录不存在则终止流水线，避免后续白跑
-                    sh "ls -l ${BUILD_DIR} || (echo '共享工作空间中未找到${SERVICE_NAME}模块' && exit 1)"
-                }
+                checkout scm
             }
         }
 
 
         stage('Maven打包') {
             steps {
-                ws("${SHARED_WS}") {
-                    dir("parent") {
-                        sh "mvn clean package -pl ${SERVICE_NAME} -am -DskipTests"
-                    }
+               dir("parent") {
+                   sh "mvn clean package -pl ${APP_NAME} -am -DskipTests"
+               }
 
-                }
 
             }
         }
 
         stage('构建镜像') {
             steps {
-                ws("${SHARED_WS}") {
-                    dir("parent/${SERVICE_NAME}") {
-                    sh "docker rmi ${IMAGE_NAME} || true"
+                dir("parent/${APP_NAME}") {
                     sh "docker build -t ${IMAGE_NAME} ."
-                }
-
+                    sh "docker images | grep ${IMAGE_NAME}"
                 }
             }
         }
 
         // 推送镜像（暂时忽略）
 
-       stage('启动容器') {
+       stage('部署到k3s集群') {
             steps {
-                sh "docker stop ${SERVICE_NAME} || true"
-                sh "docker rm ${SERVICE_NAME} || true"
-
-                sh "docker run -d --name ${SERVICE_NAME} -p ${PORT_MAPPING} ${IMAGE_NAME}"
+                dir("parent/${APP_NAME}") {
+                    sh '''
+                    kubectl apply --dry-run=client -f deploy.yaml -n ${NAMESPACE}
+                    kubectl apply -f deploy.yaml -n ${NAMESPACE}
+                    kubectl rollout status deployment/${APP_NAME} -n ${NAMESPACE} --timeout=120s
+                    kubectl get pods -n ${NAMESPACE} -l app=${APP_NAME}
+                    kubectl get svc -n ${NAMESPACE} ${APP_NAME}-service
+                    '''
+                }
             }
 
 
@@ -98,18 +96,27 @@ pipeline {
     post {
         success {
             echo "===== 流水线执行成功！服务已部署成功 ====="
-            sh 'echo "容器名：${SERVICE_NAME} | 镜像名：${IMAGE_NAME} | 访问端口：${PORT_MAPPING%:*}"'
+            sh '''
+                echo "应用名称：${APP_NAME}"
+                echo "镜像版本：${IMAGE_NAME}"
+                echo "外访端口: 30905"
+                echo "命令空间：${NAMESPACE}"
+            '''
         }
         failure {
             echo "===== 流水线执行失败！====="
             // 失败时打印容器日志，方便排查
-            sh "docker logs ${SERVICE_NAME} || true"
+            sh "kubectl logs -n ${NAMESPACE} -l app=${APP_NAME} --tail=50 || true"
         }
         always {
             echo "===== 执行最终清理 ====="
-            sh "rm -rf ${SHARED_WS}/parent/${SERVICE_NAME}/target || true"
-            sh "rm -rf ${SHARED_WS}/parent/${SERVICE_NAME}/tmp || true"
-            sh '''df -h | grep -E '(/$|/var/lib/docker)' || true'''
+            // 只删产物，不删BUILD_DIR（保留代码/Dockerfile）
+            sh "rm -rf ${BUILD_DIR}/target || true"
+            sh "rm -rf ${BUILD_DIR}/${APP_NAME}.tar || true"
+            // 清理Docker退出容器（避免堆积）
+            sh '''
+            docker rm $(docker ps -a -q --filter status=exited) || true
+            '''
         }
 
     }
