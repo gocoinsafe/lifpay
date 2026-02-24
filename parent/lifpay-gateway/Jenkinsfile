@@ -1,9 +1,5 @@
 pipeline {
     agent any
-    options {
-        skipDefaultCheckout()
-    }
-
     tools {
         maven 'maven-3.8'
     }
@@ -65,12 +61,14 @@ pipeline {
 
        stage('部署到k3s集群') {
             steps {
-                sh '''
-                kubectl apply --dry-run=client -f deploy.yaml -n ${NAMESPACE}
-                kubectl apply -f deploy.yaml -n ${NAMESPACE}
-                kubectl get pods -n ${NAMESPACE} -l app=${APP_NAME}
-                kubectl get svc -n ${NAMESPACE} ${APP_NAME}-service
-                '''
+                dir("parent/${APP_NAME}") {
+                    sh '''
+                    kubectl apply --dry-run=client -f deploy.yaml -n ${NAMESPACE}
+                    kubectl apply -f deploy.yaml -n ${NAMESPACE}
+                    kubectl get pods -n ${NAMESPACE} -l app=${APP_NAME}
+                    kubectl get svc -n ${NAMESPACE} ${APP_NAME}-service
+                    '''
+                }
             }
 
 
