@@ -20,4 +20,4 @@ spring:
         password: ${NACOS_PASSWORD:nacos}
   # 核心：修正import格式，添加nacos:前缀，指定从Nacos导入
   config:
-    import: nacos:lifpay-gateway.yaml?namespace=52499532-e840-4773-8b08-da5f1ddaf764 # 完整格式：nacos:${Data ID}
+    import: nacos:lifpay-misc.yaml?namespace=52499532-e840-4773-8b08-da5f1ddaf764 # 完整格式：nacos:${Data ID}
