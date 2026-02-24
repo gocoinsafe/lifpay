@@ -10,85 +10,65 @@ pipeline {
 
 
     environment {
-    SERVICE_NAME = "lifpay-gateway"
+    APP_NAME = "lifpay-gateway"
     IMAGE_TAG = "v1.0"
-    IMAGE_NAME = "${SERVICE_NAME}:${IMAGE_TAG}"
-    PORT_MAPPING = "9001:9001"
-    SHARED_WS = "/var/jenkins_home/workspace/lifpay-shared-workspace"
+    IMAGE_NAME = "${APP_NAME}:${IMAGE_TAG}"
+    PORT = 9001
+    NAMESPACE = "lifpay-test"
     //定义构建目录，方便清理
-    BUILD_DIR = "${SHARED_WS}/parent/${SERVICE_NAME}"
+    BUILD_DIR = "${WORKSPACE}/parent/${APP_NAME}"
     }
 
     stages {
         stage('前置清理') {
             steps {
-                ws("${SHARED_WS}") {
-                    echo "当前工作空间：${pwd()}"
-                    echo "===========开始清理历史构建资源============="
-                    sh "docker stop \$(docker ps -a -q --filter name=${SERVICE_NAME}) || true"
-                    sh "docker rm \$(docker ps -a -q --filter name=${SERVICE_NAME}) || true"
-
-                    sh "docker rmi \$(docker images -q ${SERVICE_NAME}) || true"
-
-                    sh "docker rmi \$(docker images -f 'dangling=true' -q) || true"
-
-                    sh "rm -rf ${BUILD_DIR}/target || true"
-                    sh "rm -rf ${SHARED_WS}/parent/target || true"
-
-                    sh "rm -rf ${SHARED_WS}/@tmp || true"
-
-                    echo "=============历史资源清理完成==============="
-
-                }
-
-
+                echo "==================开始清理历史构建资源===================="
+                sh "kubectl delete pod -n ${NAMESPACE} -l app=${APP_NAME} --force --grace-period=0 || true"
+                sh "rm -rf ${BUILD_DIR}/target || true"
+                sh "rm -rf ${WORKSPACE}/parent/target || true"
+                sh "rm -rf ${WORKSPACE}/@tmp || true"
+                echo "===================历史资源清理完成======================"
             }
         }
 
-        // 新增：验证共享工作空间有效性（提前发现代码缺失问题）
-        stage('验证共享工作空间') {
+
+        stage('拉取代码') {
             steps {
-                ws("${SHARED_WS}") {
-                    echo "验证${SERVICE_NAME}模块是否存在..."
-                    // 目录不存在则终止流水线，避免后续白跑
-                    sh "ls -l ${BUILD_DIR} || (echo '共享工作空间中未找到${SERVICE_NAME}模块' && exit 1)"
-                }
+                checkout scm
             }
         }
 
 
         stage('Maven打包') {
             steps {
-                ws("${SHARED_WS}") {
-                    dir("parent") {
-                        sh "mvn clean package -pl ${SERVICE_NAME} -am -DskipTests"
-                    }
+               dir("parent") {
+                   sh "mvn clean package -pl ${APP_NAME} -am -DskipTests"
+               }
 
-                }
 
             }
         }
 
         stage('构建镜像') {
             steps {
-                ws("${SHARED_WS}") {
-                    dir("parent/${SERVICE_NAME}") {
+                dir("parent/${APP_NAME}") {
                     sh "docker rmi ${IMAGE_NAME} || true"
                     sh "docker build -t ${IMAGE_NAME} ."
-                }
-
+                    sh "docker images | grep ${IMAGE_NAME}"
                 }
             }
         }
 
         // 推送镜像（暂时忽略）
 
-       stage('启动容器') {
+       stage('部署到k3s集群') {
             steps {
-                sh "docker stop ${SERVICE_NAME} || true"
-                sh "docker rm ${SERVICE_NAME} || true"
-
-                sh "docker run -d --name ${SERVICE_NAME} -p ${PORT_MAPPING} ${IMAGE_NAME}"
+                sh '''
+                kubectl apply --dry-run=client -f deploy.yaml -n ${NAMESPACE}
+                kubectl apply -f deploy.yaml -n ${NAMESPACE}
+                kubectl get pods -n ${NAMESPACE} -l app=${APP_NAME}
+                kubectl get svc -n ${NAMESPACE} ${APP_NAME}-service
+                '''
             }
 
 
@@ -99,18 +79,22 @@ pipeline {
     post {
         success {
             echo "===== 流水线执行成功！服务已部署成功 ====="
-            sh 'echo "容器名：${SERVICE_NAME} | 镜像名：${IMAGE_NAME} | 访问端口：${PORT_MAPPING%:*}"'
+            sh '''
+                echo "应用名称：${APP_NAME}"
+                echo "镜像版本：${IMAGE_NAME}"
+                echo "访问地址：http://$(hostname -I | awk '{print $1}'):30901"
+                echo "命令空间：${NAMESPACE}"
+            '''
         }
         failure {
             echo "===== 流水线执行失败！====="
             // 失败时打印容器日志，方便排查
-            sh "docker logs ${SERVICE_NAME} || true"
+            sh "kubectl logs -n ${NAMESPACE} -l app=${APP_NAME} || true"
         }
         always {
             echo "===== 执行最终清理 ====="
-            sh "rm -rf ${SHARED_WS}/parent/${SERVICE_NAME}/target || true"
-            sh "rm -rf ${SHARED_WS}/parent/${SERVICE_NAME}/tmp || true"
-            sh '''df -h | grep -E '(/$|/var/lib/docker)' || true'''
+            sh "rm -rf ${BUILD_DIR} || true"
+            sh "rm -rf ${BUILD_DIR}/${APP_NAME}.tar || true"
         }
 
     }
