@@ -15,7 +15,7 @@ RUN mvn package -DskipTests && cp target/*.jar /app.jar
 FROM adoptopenjdk/openjdk8:jdk8u362-b09-slim
 WORKDIR /app
 
-COPY --from-builder /app.jar /app/app.jar
+COPY --from=builder /app.jar /app/app.jar
 
 ENV TZ=Asia/Shanghai
 ENV LANG=C.UTF-8
