@@ -114,7 +114,9 @@ pipeline {
             sh "rm -rf ${BUILD_DIR}/target || true"
             sh "rm -rf ${BUILD_DIR}/${APP_NAME}.tar || true"
             // 清理Docker退出容器（避免堆积）
-            sh "docker rm $(docker ps -a -q --filter status=exited) || true"
+            sh '''
+            docker rm $(docker ps -a -q --filter status=exited) || true
+            '''
         }
 
     }
