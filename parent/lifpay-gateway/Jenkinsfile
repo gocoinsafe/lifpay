@@ -21,7 +21,7 @@ pipeline {
                 echo "==================开始清理历史构建资源===================="
                  sh '''
                     # 重启Deployment，触发Pod重建
-                    kubectl rollout restart deployment $(APP_NAME) -n ${NAMESPACE} || true
+                    kubectl rollout restart deployment ${APP_NAME} -n ${NAMESPACE} || true
                     # 清理集群内终止形态的旧Pod
                     kubectl delete pod -n ${NAMESPACE} --field-selector=status.phase=Failed || true
                     kubectl delete pod -n ${NAMESPACE} --field-selector=status.phase=Succeeded || true
@@ -34,7 +34,7 @@ pipeline {
                 sh '''
                     # 停止并删除所有关联容器
                     docker stop $(docker ps -a -q --filter name=${APP_NAME}) || true
-                    docker stop $(docker ps -a -q --filter name=${APP_NAME}) || true
+                    docker rm $(docker ps -a -q --filter name=${APP_NAME}) || true
                     # 删除当前镜像
                     docker rmi -f ${IMAGE_NAME} || true
                     # 清理虚悬镜像
@@ -110,8 +110,11 @@ pipeline {
         }
         always {
             echo "===== 执行最终清理 ====="
-            sh "rm -rf ${BUILD_DIR} || true"
+            // 只删产物，不删BUILD_DIR（保留代码/Dockerfile）
+            sh "rm -rf ${BUILD_DIR}/target || true"
             sh "rm -rf ${BUILD_DIR}/${APP_NAME}.tar || true"
+            // 清理Docker退出容器（避免堆积）
+            sh "docker rm $(docker ps -a -q --filter status=exited) || true"
         }
 
     }
