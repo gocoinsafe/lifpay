@@ -51,7 +51,7 @@ public class UserController {
 
 
     @PostMapping(path = "/userinfo")
-    @ApiOperation(value = "获取用户信息",tags = "迭代37")
+    @ApiOperation(value = "获取用户信息")
     public @ResponseBody
     BaseResponse<UserInfoResp> getUserInfo(@RequestBody IncludePkRequest req) {
         log.info("getUserInfo request {}", JSON.toJSONString(req));

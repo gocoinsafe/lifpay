@@ -132,13 +132,6 @@
     <!-- 构建插件：自动生成 proto 客户端（若上述 LND 依赖未生效时使用） -->
     <build>
         <finalName>lifpay-user</finalName>
-        <extensions>
-            <extension>
-                <groupId>kr.motd.maven</groupId>
-                <artifactId>os-maven-plugin</artifactId>
-                <version>1.7.1</version>
-            </extension>
-        </extensions>
         <plugins>
             <plugin>
                 <groupId>org.springframework.boot</groupId>

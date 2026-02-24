@@ -20,6 +20,9 @@ public class UserInfoResp {
     @Schema(description = "邮箱")
     private String email;
 
+    @Schema(description = "lightning地址")
+    private String lightning;
+
     @Schema(description = "头像URL")
     private String iconUrl;
 
