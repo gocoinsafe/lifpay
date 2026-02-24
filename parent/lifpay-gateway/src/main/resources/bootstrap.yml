@@ -9,11 +9,11 @@ spring:
         enabled: true # 开启配置中心（必须改true，否则配置不生效）
         server-addr: test-nacos-service:8848
         file-extension: yaml # 修正为官方推荐的yaml（兼容yml，但更规范）
-        namespace: a9015a45-cf9f-415d-803f-11f6a29d2ea2
+        namespace: 52499532-e840-4773-8b08-da5f1ddaf764
       discovery:
         enabled: true
         server-addr: test-nacos-service:8848
-        namespace: a9015a45-cf9f-415d-803f-11f6a29d2ea2 # 建议和config的namespace一致
+        namespace: 52499532-e840-4773-8b08-da5f1ddaf764 # 建议和config的namespace一致
   # 核心：修正import格式，添加nacos:前缀，指定从Nacos导入
   config:
-    import: nacos:lifpay-gateway.yml?namespace=a9015a45-cf9f-415d-803f-11f6a29d2ea2 # 完整格式：nacos:${Data ID}
+    import: nacos:lifpay-gateway.yml?namespace=52499532-e840-4773-8b08-da5f1ddaf764 # 完整格式：nacos:${Data ID}

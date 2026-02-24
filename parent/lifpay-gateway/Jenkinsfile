@@ -19,10 +19,29 @@ pipeline {
         stage('前置清理') {
             steps {
                 echo "==================开始清理历史构建资源===================="
-                sh "kubectl delete pod -n ${NAMESPACE} -l app=${APP_NAME} --force --grace-period=0 || true"
+                 sh '''
+                    # 重启Deployment，触发Pod重建
+                    kubectl rollout restart deployment $(APP_NAME) -n ${NAMESPACE} || true
+                    # 清理集群内终止形态的旧Pod
+                    kubectl delete pod -n ${NAMESPACE} --field-selector=status.phase=Failed || true
+                    kubectl delete pod -n ${NAMESPACE} --field-selector=status.phase=Succeeded || true
+                 '''
+                 // 清理本地构建产物
                 sh "rm -rf ${BUILD_DIR}/target || true"
                 sh "rm -rf ${WORKSPACE}/parent/target || true"
                 sh "rm -rf ${WORKSPACE}/@tmp || true"
+                // 清理docker冗余资源
+                sh '''
+                    # 停止并删除所有关联容器
+                    docker stop $(docker ps -a -q --filter name=${APP_NAME}) || true
+                    docker stop $(docker ps -a -q --filter name=${APP_NAME}) || true
+                    # 删除当前镜像
+                    docker rmi -f ${IMAGE_NAME} || true
+                    # 清理虚悬镜像
+                    docker rmi -f $(docker images -f "dangling=true" -q) || true
+                    # 清理该应用的历史版本镜像
+                    docker rmi -f $(docker images -q ${APP_NAME}) || true
+                '''
                 echo "===================历史资源清理完成======================"
             }
         }
@@ -48,9 +67,6 @@ pipeline {
         stage('构建镜像') {
             steps {
                 dir("parent/${APP_NAME}") {
-                    sh "docker stop ${APP_NAME} || true"
-                    sh "docker rm ${APP_NAME} || true"
-                    sh "docker rmi ${IMAGE_NAME} || true"
                     sh "docker build -t ${IMAGE_NAME} ."
                     sh "docker images | grep ${IMAGE_NAME}"
                 }
@@ -65,6 +81,7 @@ pipeline {
                     sh '''
                     kubectl apply --dry-run=client -f deploy.yaml -n ${NAMESPACE}
                     kubectl apply -f deploy.yaml -n ${NAMESPACE}
+                    kubectl rollout status deployment/${APP_NAME} -n ${NAMESPACE} --timeout=120
                     kubectl get pods -n ${NAMESPACE} -l app=${APP_NAME}
                     kubectl get svc -n ${NAMESPACE} ${APP_NAME}-service
                     '''
@@ -82,14 +99,14 @@ pipeline {
             sh '''
                 echo "应用名称：${APP_NAME}"
                 echo "镜像版本：${IMAGE_NAME}"
-                echo "访问地址：http://$(hostname -I | awk '{print $1}'):30901"
+                echo "外访端口: 30901"
                 echo "命令空间：${NAMESPACE}"
             '''
         }
         failure {
             echo "===== 流水线执行失败！====="
             // 失败时打印容器日志，方便排查
-            sh "kubectl logs -n ${NAMESPACE} -l app=${APP_NAME} || true"
+            sh "kubectl logs -n ${NAMESPACE} -l app=${APP_NAME} --tail=50 || true"
         }
         always {
             echo "===== 执行最终清理 ====="
