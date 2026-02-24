@@ -1,8 +1,8 @@
 # 多阶段构建： 构建层+运行层，大幅减小镜像体积
 FROM maven:3.8.5-openjdk-8 AS builder
 WORKDIR /build
-COPY parent/${APP_NAME}/pom.xml /build/
-COPY parent/pom.xml /build/../
+COPY pom.xml /build/
+COPY ../pom.xml /build/../
 
 # 提前下载依赖，利用构建缓存
 RUN mvn dependency:go-offline -B
