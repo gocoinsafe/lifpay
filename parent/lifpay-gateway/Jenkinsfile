@@ -52,8 +52,10 @@ pipeline {
         stage('构建镜像') {
             steps {
                 dir("parent/${APP_NAME}") {
+                    sh "docker stop ${APP_NAME} || true"
+                    sh "docker rm ${APP_NAME} || true"
                     sh "docker rmi ${IMAGE_NAME} || true"
-                    sh "docker build -t ${IMAGE_NAME} ."
+                    sh "DOCKER_BUILDKIT=1 docker build -t ${IMAGE_NAME} ."
                     sh "docker images | grep ${IMAGE_NAME}"
                 }
             }
