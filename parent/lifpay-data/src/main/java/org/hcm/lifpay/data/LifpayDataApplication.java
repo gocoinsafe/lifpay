@@ -17,7 +17,7 @@ import java.net.UnknownHostException;
 @EnableFeignClients
 @EnableScheduling
 @EnableAsync
-@MapperScan("org.hcm.lifpay.data.dao.mapper")
+@MapperScan("org.hcm.lifpay.data.dao.repository")
 @Slf4j
 public class LifpayDataApplication {
 
