@@ -23,7 +23,7 @@ import org.hcm.lifpay.common.BaseEntity;
 @Getter
 @Setter
 @Accessors(chain = true)
-@TableName("t_user_transaction")
+@TableName("t_transaction")
 public class UserTransactionDo extends BaseEntity implements Serializable {
 
 
