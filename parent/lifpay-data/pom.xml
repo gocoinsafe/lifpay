@@ -63,8 +63,46 @@
             <groupId>org.hcm.lifpay</groupId>
             <artifactId>lifpay-core</artifactId>
         </dependency>
-
-
     </dependencies>
+
+
+
+    <!-- 构建插件：自动生成 proto 客户端（若上述 LND 依赖未生效时使用） -->
+    <build>
+        <finalName>lifpay-data</finalName>
+        <plugins>
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+                <configuration>
+                    <includeSystemScope>true</includeSystemScope>
+                </configuration>
+            </plugin>
+
+            <plugin><!-- 要将源码放上去，需要加入这个插件 -->
+                <artifactId>maven-source-plugin</artifactId>
+                <version>3.2.1</version>
+                <configuration>
+                    <attach>true</attach>
+                </configuration>
+                <executions>
+                    <execution>
+                        <phase>compile</phase>
+                        <goals>
+                            <goal>jar</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <configuration>
+                    <source>8</source>
+                    <target>8</target>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
 
 </project>
