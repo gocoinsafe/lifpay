@@ -6,10 +6,10 @@ pipeline {
 
 
     environment {
-    APP_NAME = "lifpay-gateway"
+    APP_NAME = "lifpay-data"
     IMAGE_TAG = "v1.0"
     IMAGE_NAME = "${APP_NAME}:${IMAGE_TAG}"
-    PORT = 9001
+    PORT = 9002
     NAMESPACE = "lifpay-test"
     //定义构建目录，方便清理
     BUILD_DIR = "${WORKSPACE}/parent/${APP_NAME}"
@@ -99,7 +99,7 @@ pipeline {
             sh '''
                 echo "应用名称：${APP_NAME}"
                 echo "镜像版本：${IMAGE_NAME}"
-                echo "外访端口: c"
+                echo "外访端口: 30902"
                 echo "命令空间：${NAMESPACE}"
             '''
         }

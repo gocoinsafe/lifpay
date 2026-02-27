@@ -1,0 +1,70 @@
+# deploy.yaml（项目根目录）
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: lifpay-data
+  namespace: lifpay-test
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: lifpay-data
+  strategy:
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        app: lifpay-data
+    spec:
+      containers:
+        - name: lifpay-data
+          image: lifpay-data:v1.0
+          imagePullPolicy: Never
+          env:
+            - name: NACOS_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: nacos-auth-secret
+                  key: nacos-username
+            - name: NACOS_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: nacos-auth-secret
+                  key: nacos-password
+          ports:
+            - containerPort: 9002
+          livenessProbe:
+            tcpSocket:
+              port: 9002
+            initialDelaySeconds: 30
+            periodSeconds: 5
+            timeoutSeconds: 3
+            failureThreshold: 3
+          readinessProbe:
+            tcpSocket:
+              port: 9002
+            initialDelaySeconds: 20
+            periodSeconds: 3
+            timeoutSeconds: 2
+            failureThreshold: 3
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: lifpay-data-service
+  namespace: lifpay-test
+  labels:
+    app: lifpay-data
+spec:
+  type: NodePort
+  ports:
+    - port: 9002
+      targetPort: 9002
+      nodePort: 30902
+      protocol: TCP
+      name: http
+  selector:
+    app: lifpay-data
