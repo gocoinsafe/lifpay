@@ -7,14 +7,14 @@ spring:
     nacos:
       config:
         enabled: true # 开启配置中心（必须改true，否则配置不生效）
-        server-addr: 43.134.188.63:30848
+        server-addr: test-nacos-service:8848
         file-extension: yaml # 修正为官方推荐的yaml（兼容yml，但更规范）
         namespace: 52499532-e840-4773-8b08-da5f1ddaf764
         username: ${NACOS_USERNAME:nacos}
         password: ${NACOS_PASSWORD:nacos}
       discovery:
         enabled: true
-        server-addr: 43.134.188.63:30848
+        server-addr: test-nacos-service:8848
         namespace: 52499532-e840-4773-8b08-da5f1ddaf764 # 建议和config的namespace一致
         username: ${NACOS_USERNAME:nacos}
         password: ${NACOS_PASSWORD:nacos}
