@@ -4,6 +4,7 @@ import org.hcm.lifpay.common.BaseRequest;
 import org.hcm.lifpay.common.BaseResponse;
 import org.hcm.lifpay.user.dto.req.IncludePkRequest;
 import org.hcm.lifpay.user.dto.req.LoginRequest;
+import org.hcm.lifpay.user.dto.req.UpdateUserInfoReq;
 import org.hcm.lifpay.user.dto.resp.LoginResponse;
 import org.hcm.lifpay.user.dto.resp.UserInfoResp;
 
@@ -26,6 +27,9 @@ public interface UserLoginService {
 
 
     BaseResponse<UserInfoResp> getUserInfo(IncludePkRequest req);
+
+
+    BaseResponse updateUserInfo(UpdateUserInfoReq req);
 
 
 //    AdminBaseResponse<LoginResponse> phoneLogin(PhoneLoginRequest request, HttpServletResponse httpServletResponse);

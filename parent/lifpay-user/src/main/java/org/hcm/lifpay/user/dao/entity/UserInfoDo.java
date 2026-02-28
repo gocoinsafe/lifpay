@@ -91,4 +91,10 @@ public class UserInfoDo extends BaseEntity implements Serializable {
     @TableField("user_type")
     private Integer userType;
 
+    /**
+     * 用户简介
+     */
+    @TableField("bio")
+    private String bio;
+
 }

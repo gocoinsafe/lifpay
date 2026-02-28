@@ -6,11 +6,8 @@ import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.hcm.lifpay.common.BaseRequest;
 import org.hcm.lifpay.common.BaseResponse;
-import org.hcm.lifpay.user.dto.req.AgreementAgreeReq;
-import org.hcm.lifpay.user.dto.req.AgreementQueryReq;
+import org.hcm.lifpay.user.dto.req.*;
 import org.hcm.lifpay.user.dto.resp.AgreementListDto;
-import org.hcm.lifpay.user.dto.req.IncludePkRequest;
-import org.hcm.lifpay.user.dto.req.LoginRequest;
 import org.hcm.lifpay.user.dto.resp.LoginResponse;
 import org.hcm.lifpay.user.dto.resp.UserInfoResp;
 import org.hcm.lifpay.user.service.AccountService;
@@ -99,6 +96,26 @@ public class UserController {
         log.info("agreementAgree req:{} ", JSON.toJSONString(req));
         BaseResponse response = accountService.agreementAgree(req);
         log.info("agreementAgree response "+ JSON.toJSONString(response));
+        return response;
+    }
+
+
+    @PostMapping(path = "/upload/image")
+    @ApiOperation(value = "上传图像")
+    public BaseResponse uploadImage(@Valid @RequestBody AgreementAgreeReq req){
+        log.info("uploadImage req:{} ", JSON.toJSONString(req));
+        BaseResponse response = accountService.agreementAgree(req);
+        log.info("uploadImage response "+ JSON.toJSONString(response));
+        return response;
+    }
+
+
+    @PostMapping(path = "/update/userInfo")
+    @ApiOperation(value = "修改用户信息")
+    public BaseResponse updateUserInfo(@Valid @RequestBody UpdateUserInfoReq req){
+        log.info("updateUserInfo req:{} ", JSON.toJSONString(req));
+        BaseResponse response = userLoginService.updateUserInfo(req);
+        log.info("updateUserInfo response "+ JSON.toJSONString(response));
         return response;
     }
 

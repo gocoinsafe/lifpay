@@ -25,6 +25,7 @@ import org.hcm.lifpay.user.dao.repository.UserInfoRepository;
 import org.hcm.lifpay.user.dto.UserResultEnum;
 import org.hcm.lifpay.user.dto.req.IncludePkRequest;
 import org.hcm.lifpay.user.dto.req.LoginRequest;
+import org.hcm.lifpay.user.dto.req.UpdateUserInfoReq;
 import org.hcm.lifpay.user.dto.resp.LoginResponse;
 import org.hcm.lifpay.user.dto.resp.UserInfoResp;
 import org.hcm.lifpay.user.exception.LifpayException;
@@ -277,6 +278,31 @@ public class UserLoginServiceImpl implements UserLoginService {
         userInfoRepository.insert(userInfoDo);
 
         return userInfoDo;
+    }
+
+
+    @Override
+    public BaseResponse updateUserInfo(UpdateUserInfoReq req) {
+        logger.info("updateUserInfo.req:{}",JSON.toJSONString(req));
+        if (StringUtils.isNotEmpty(req.getBio()) && req.getBio().length() > 120){
+            return BaseResponse.fail(UserResultEnum.BAD_INPUT.getCode(),UserResultEnum.BAD_INPUT.getMsg());
+        }
+        BaseResponse response = new BaseResponse<>();
+        // 根据用户id 查询用户信息
+        UserInfoDo userInfoDO = userInfoRepository.selectById(req.getUserId());
+        if (null == userInfoDO){
+            return BaseResponse.fail(UserResultEnum.USER_NOT_EXISTS.getCode(),UserResultEnum.USER_NOT_EXISTS.getMsg());
+        }
+        userInfoDO.setName(req.getNickName());
+        userInfoDO.setBio(req.getBio());
+        userInfoDO.setIconUrl(req.getIconUrl());
+        userInfoDO.setUpdateTime(System.currentTimeMillis());
+
+        userInfoRepository.updateById(userInfoDO);
+        logger.info("updateUserInfo.done:{}",JSON.toJSONString(userInfoDO));
+        response.setCode(UserResultEnum.SUCCESS.getCode());
+        response.setMessage(UserResultEnum.SUCCESS.getMsg());
+        return response;
     }
 
     private void cacheUserInfo(UserInfoDo userInfoDo) {
