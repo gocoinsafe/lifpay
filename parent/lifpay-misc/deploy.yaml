@@ -23,13 +23,6 @@ spec:
         - name: lifpay-misc
           image: lifpay-misc:v1.0
           imagePullPolicy: Never
-          resources:
-            requests:
-              memory: "256Mi"
-              cpu: "100m"
-            limits:
-              memory: "768Mi"  # 比JVM堆内存多512M，留给出堆内存
-              cpu: "200m"
           env:
             - name: NACOS_USERNAME
               valueFrom:
