@@ -6,7 +6,7 @@ COPY target/*.jar /app/
 RUN mv $(ls -S /app/*.jar | head -1) /app/app.jar
 
 ENV TZ=Asia/Shanghai
-ENV JAVA_OPTS="-Dfile.encoding=utf8 -Djava.security.egd=file:/dev/.urandom"
+ENV JAVA_OPTS="-Xms512m -Xmx1024m -XX:MetaspaceSize=64m -XX:MaxMetaspaceSize=128m -Dfile.encoding=utf8 -Djava.security.egd=file:/dev/.urandom"
 ENV PARAMS="--server.port=9001 --spring.profiles.active=test --spring.cloud.nacos.server-addr=test-nacos-service:8848"
 
 EXPOSE 9001

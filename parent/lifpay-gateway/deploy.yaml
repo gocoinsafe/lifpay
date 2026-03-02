@@ -23,6 +23,13 @@ spec:
         - name: lifpay-gateway
           image: lifpay-gateway:v1.0
           imagePullPolicy: Never
+          resources:
+            requests:
+              memory: "512Mi"
+              cpu: "200m"
+            limits:
+              memory: "1536Mi"  # 比JVM堆内存多512M，留给出堆内存
+              cpu: "500m"
           env:
             - name: NACOS_USERNAME
               valueFrom:
