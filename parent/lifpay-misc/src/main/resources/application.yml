@@ -94,6 +94,9 @@ misc:
     sdkAppId: 2400001156
     signName: LifPay
     templateId: 2929134
+  coinGecko:
+    url: https://api.coingecko.com/api/v3/exchange_rates
+
   verifyCode:
     title: Lifpay verify code
     content: Watch out for scams. DON'T share this security code with anyone, our employees will never ask for the code. Your Lifpay verification code is

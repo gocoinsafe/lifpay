@@ -43,6 +43,12 @@ public enum MiscResultEnum {
     INVALID_RANDOM(100112,"Random number error", "随机数错误"),
     INVALID_SMS_CODE(100113,"The verification code is incorrect. Please re-enter it!", "验证码错误，请重新输入！"),
     EXPIRED_SMS_CODE(100114, "The verification code has expired. Please obtain a new one!","验证码已经失效，请重新获取！"),
+    EXCHANGE_RATE_FAILED(100115, "Exchange rate interface call failed","汇率接口调用失败！"),
+    EXCHANGE_RATE_DATA_PARSING_FAILED(100116, "Exchange rate data parsing failed","汇率数据解析失败"),
+    EXCHANGE_RATE_API_SUCCESS(100117, "Exchange rate data acquisition was successful","汇率数据获取成功"),
+
+
+
     ;
 
 

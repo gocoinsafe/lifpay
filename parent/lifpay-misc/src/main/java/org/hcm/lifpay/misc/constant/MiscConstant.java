@@ -16,6 +16,13 @@ public interface MiscConstant {
     public static final String SMS_UNIVERSAL_VERIFICATION_CODE = "111111";
 
 
+    public static final String MISC_EXCHANGE_RATE = "misc_exchange_rate";
+
+    public static final String MISC_EXCHANGE_RATE_BTC = "btc";
+
+    public static final String MISC_EXCHANGE_RATE_CNY = "cny";
+
+    public static final String MISC_EXCHANGE_RATE_USD = "usd";
 
 
 
