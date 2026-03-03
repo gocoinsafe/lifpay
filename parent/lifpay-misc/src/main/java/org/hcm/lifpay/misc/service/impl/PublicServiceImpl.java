@@ -68,6 +68,9 @@ public class PublicServiceImpl extends ServiceImpl<VerifyCodeRepository, VerifyC
     @Value("${misc.coinGecko.url: https://api.coingecko.com/api/v3/exchange_rates}")
     String coinGeckoUrl;
 
+    // 汇率缓存过期时间 15分钟
+    Integer EXCHANGE_RATE_TIME= 60* 5;
+
     @Autowired
     protected RedisDS redisDS;
 
@@ -208,7 +211,7 @@ public class PublicServiceImpl extends ServiceImpl<VerifyCodeRepository, VerifyC
             response.setData(rateModel);
             // 设置数据缓存时间 15分钟
             String jsonStr = JSON.toJSONString(rateModel);
-            redisDS.setex(MiscConstant.MISC_EXCHANGE_RATE,jsonStr, 60 * 60 * 15);
+            redisDS.setex(MiscConstant.MISC_EXCHANGE_RATE,jsonStr, EXCHANGE_RATE_TIME);
 
         } catch (RestClientException e) {
             // 处理HTTP请求异常（网络问题、接口不可达等）
