@@ -4,8 +4,11 @@ package org.hcm.lifpay.misc.controller;
 
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.extern.slf4j.Slf4j;
+import org.hcm.lifpay.common.BaseRequest;
 import org.hcm.lifpay.common.BaseResponse;
 import org.hcm.lifpay.misc.dto.req.GetVerifyCodeReq;
+import org.hcm.lifpay.misc.dto.resp.ExchangeRateModel;
+import org.hcm.lifpay.misc.dto.resp.RateModel;
 import org.hcm.lifpay.misc.service.PublicService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -34,6 +37,16 @@ public class PublicController {
         return publicService.getVerifyCode(request);
     }
 
+
+    /**
+     * 获取汇率接口
+     * */
+    @Operation(summary = "获取汇率接口")
+    @PostMapping(path = "/get/exchange/rate")
+    public BaseResponse<ExchangeRateModel> getExchangeRate(@RequestBody BaseRequest request) {
+        log.info("getExchangeRate: {}", request);
+        return publicService.getExchangeRate(request);
+    }
 
 
 }

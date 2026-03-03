@@ -7,6 +7,7 @@ import com.tencentcloudapi.common.exception.TencentCloudSDKException;
 import com.tencentcloudapi.sms.v20210111.models.SendSmsResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.bouncycastle.util.encoders.Hex;
+import org.hcm.lifpay.common.BaseRequest;
 import org.hcm.lifpay.common.BaseResponse;
 import org.hcm.lifpay.misc.common.MiscResultEnum;
 import org.hcm.lifpay.misc.common.SmsCodeStatusEnum;
@@ -14,6 +15,9 @@ import org.hcm.lifpay.misc.common.VerifyCodeTypeEnum;
 import org.hcm.lifpay.misc.dao.entity.VerifyCodeDo;
 import org.hcm.lifpay.misc.dao.repository.VerifyCodeRepository;
 import org.hcm.lifpay.misc.dto.req.GetVerifyCodeReq;
+import org.hcm.lifpay.misc.dto.resp.CoinGeckoRateResp;
+import org.hcm.lifpay.misc.dto.resp.ExchangeRateModel;
+import org.hcm.lifpay.misc.dto.resp.RateModel;
 import org.hcm.lifpay.misc.providers.SMSProvider;
 import org.hcm.lifpay.misc.service.MailService;
 import org.hcm.lifpay.misc.service.PublicService;
@@ -24,7 +28,11 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.context.config.annotation.RefreshScope;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestClientException;
+import org.springframework.web.client.RestTemplate;
 
 import javax.annotation.Resource;
 
@@ -132,5 +140,75 @@ public class PublicServiceImpl extends ServiceImpl<VerifyCodeRepository, VerifyC
         byte[] hash = HashUtil.sha256(verifyMsg.getBytes());
         String hashStr = Hex.toHexString(hash);
         return hashStr.startsWith(workload);
+    }
+
+
+    @Override
+    public BaseResponse<ExchangeRateModel> getExchangeRate(BaseRequest request) {
+        logger.info("getExchangeRate.req:{}",JSON.toJSONString(request));
+
+        BaseResponse<ExchangeRateModel> response = new BaseResponse<>();
+        // CoinGecko汇率接口地址
+        final String COIN_GECKO_RATE_URL = "https://api.coingecko.com/api/v3/exchange_rates";
+
+        // 初始化RestTemplate（如果已全局注入，可直接使用注入的实例）
+        RestTemplate restTemplate = new RestTemplate();
+
+        try {
+            // 1. 调用CoinGecko接口，获取原始响应
+            logger.info("开始调用CoinGecko汇率接口，URL：{}", COIN_GECKO_RATE_URL);
+            ResponseEntity<String> apiResponse = restTemplate.getForEntity(COIN_GECKO_RATE_URL, String.class);
+
+            // 2. 校验接口响应状态
+            if (!HttpStatus.OK.equals(apiResponse.getStatusCode())) {
+                logger.error("CoinGecko接口调用失败，响应状态码：{}", apiResponse.getStatusCodeValue());
+                response.setCode(500);
+                response.setMessage("汇率接口调用失败：响应状态异常");
+                return response;
+            }
+
+            // 3. 解析JSON响应为实体类
+            String responseBody = apiResponse.getBody();
+            logger.info("CoinGecko接口返回数据：{}", responseBody);
+            CoinGeckoRateResp rateResponse = JSON.parseObject(responseBody, CoinGeckoRateResp.class);
+
+            // 4. 提取btc、cny、usd三个币种的汇率数据
+            ExchangeRateModel rateModel = new ExchangeRateModel();
+            if (rateResponse != null && rateResponse.getRates() != null) {
+                rateModel.setBtc(rateResponse.getRates().get("btc"));
+                rateModel.setCny(rateResponse.getRates().get("cny"));
+                rateModel.setUsd(rateResponse.getRates().get("usd"));
+            }
+
+            // 5. 校验核心数据是否存在
+            if (rateModel.getBtc() == null || rateModel.getCny() == null || rateModel.getUsd() == null) {
+                logger.error("汇率数据解析异常，缺失btc/cny/usd数据");
+                response.setCode(400);
+                response.setMessage("汇率数据解析失败：核心币种数据缺失");
+                return response;
+            }
+
+            // 6. 封装成功响应
+            response.setCode(200); // 按你的业务定义成功状态码
+            response.setMessage("汇率数据获取成功");
+            response.setData(rateModel);
+            logger.info("汇率数据获取成功，btc值：{}，cny值：{}，usd值：{}",
+                    rateModel.getBtc().getValue(),
+                    rateModel.getCny().getValue(),
+                    rateModel.getUsd().getValue());
+
+        } catch (RestClientException e) {
+            // 处理HTTP请求异常（网络问题、接口不可达等）
+            logger.error("调用CoinGecko汇率接口时发生网络异常", e);
+            response.setCode(500);
+            response.setMessage("汇率接口调用失败：网络异常");
+        } catch (Exception e) {
+            // 处理其他异常（JSON解析、数据转换等）
+            logger.error("解析汇率数据时发生异常", e);
+            response.setCode(500);
+            response.setMessage("汇率数据解析失败：系统异常");
+        }
+
+        return response;
     }
 }
