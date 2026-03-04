@@ -18,6 +18,8 @@ public enum DataResultEnum {
     REGISTER_BREEZ_API_ERROR(20001, "register Breez Interface Error","注册Breez接口报错"),
     UNREGISTER_BREEZ_API_ERROR(20002, "Unregister Breez Interface Error","取消注册Breez接口报错"),
 
+    TRANSACTION_INSERTION_FAILED_ERROR(20003, "Transaction record insertion failed","交易记录插入失败"),
+
     ;
 
 

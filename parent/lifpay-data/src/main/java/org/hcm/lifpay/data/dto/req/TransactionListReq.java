@@ -8,6 +8,11 @@ import org.hcm.lifpay.common.BaseRequest;
 @Data
 public class TransactionListReq extends BaseRequest {
 
+
+    @Schema(description = "用户公钥")
+    String userPrimaryKey;
+
+
     @Schema(description = "页码")
     Integer pageNo;
 
