@@ -49,8 +49,8 @@ public class CheckGlobalFilter implements GlobalFilter, Ordered {
 
 
     static final String TOKEN_NAME = "LifpayToken";
-    //redis 锁
-//    public static final String SCRIPT_LOCK = "if redis.call('setnx', KEYS[1], ARGV[1]) == 1 then redis.call('pexpire', KEYS[1], ARGV[2]) return 1 else return 0 end";
+
+    public static final String REQUEST_CHECK = "keyGateway:requestId:%s";
 
     public static final String SCRIPT_LOCK = "if redis.call('setNx',KEYS[1],ARGV[1]) then if redis.call('get',KEYS[1])==ARGV[1] then return redis.call('expire',KEYS[1],ARGV[2]) else return 0 end end";
 
@@ -103,11 +103,11 @@ public class CheckGlobalFilter implements GlobalFilter, Ordered {
         //防重放
         String timestamp = bodyJson.getString("timestamp");
         String requestId = bodyJson.getString("requestId");
-//        Pair<Boolean, Mono<Void>> replayAttackResult = preventReplayAttack(exchange, timestamp, requestId);
-//        log.info("replayAttackResult ===" + JSON.toJSONString(replayAttackResult));
-//        if (!replayAttackResult.getKey()) {
-//            return replayAttackResult.getValue();
-//        }
+        Pair<Boolean, Mono<Void>> replayAttackResult = preventReplayAttack(exchange, timestamp, requestId);
+        log.info("replayAttackResult ===" + JSON.toJSONString(replayAttackResult));
+        if (!replayAttackResult.getKey()) {
+            return replayAttackResult.getValue();
+        }
         if (getServerKeyIdUrl.equals(uri)) {
             return getServerKeyMono(exchange);
         }
@@ -281,9 +281,9 @@ public class CheckGlobalFilter implements GlobalFilter, Ordered {
     private Pair<Boolean, Mono<Void>> preventReplayAttack(ServerWebExchange exchange, String timestampStr, String requestId) {
         long time = (long) MIN * SECOND * MILLISECOND;
         if (StringUtils.isNotEmpty(requestId)) {
-//            String requestKey = String.format(RedisKey.REQUEST_CHECK, requestId);
+            String requestKey = String.format(REQUEST_CHECK, requestId);
             //如果redis那边存在相同的requestId ，返回错误的请求
-            String requestKey = "";
+//            String requestKey = "";
             try {
 
                 RedisScript<Long> redisScript = new DefaultRedisScript<>(SCRIPT_LOCK, Long.class);
