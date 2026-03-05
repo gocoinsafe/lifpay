@@ -311,7 +311,7 @@ public class UserLoginServiceImpl implements UserLoginService {
 
     @Override
     public BaseResponse<RefreshTokenResDto> checkRefreshToken(RefreshTokenReq req) {
-        BaseResponse<RefreshTokenResDto> adminBaseResponse = new BaseResponse<>();
+        BaseResponse<RefreshTokenResDto> response = new BaseResponse<>();
         RefreshTokenResDto refreshTokenResDto = new RefreshTokenResDto();
         String privateKey = decryptPrivateKey(req.getPrivateContent(), req.getAesKey().substring(0, 16));
         Map<String, String> codeMap = decryptPublicKey(req.getRefreshToken(), privateKey);
@@ -325,9 +325,9 @@ public class UserLoginServiceImpl implements UserLoginService {
         req.setDeviceId(getUserDeviceIdFrmPubKey(publicKey));
 
         if (jsonToken == null) {
-            adminBaseResponse.setCode(UserResultEnum.INVALID_REFRESH_TOKEN.getCode());
-            adminBaseResponse.setMessage(UserResultEnum.INVALID_REFRESH_TOKEN.getMsg());
-            return adminBaseResponse;
+            response.setCode(UserResultEnum.INVALID_REFRESH_TOKEN.getCode());
+            response.setMessage(UserResultEnum.INVALID_REFRESH_TOKEN.getMsg());
+            return response;
         }
         JSONObject jsonObject = JSONObject.parseObject(jsonToken);
         String userId = jsonObject.getString("userId");
@@ -339,9 +339,9 @@ public class UserLoginServiceImpl implements UserLoginService {
         if (StringUtils.isBlank(refreshToken)) {
             log.info("refreshToken 为空");
             // refresh token 失效用户重新登陆
-            adminBaseResponse.setCode(UserResultEnum.INVALID_REFRESH_TOKEN.getCode());
-            adminBaseResponse.setMessage(UserResultEnum.INVALID_REFRESH_TOKEN.getMsg());
-            return adminBaseResponse;
+            response.setCode(UserResultEnum.INVALID_REFRESH_TOKEN.getCode());
+            response.setMessage(UserResultEnum.INVALID_REFRESH_TOKEN.getMsg());
+            return response;
         }
         if (refreshToken.equals(reqRefreshToken)) {
             // 延长refresh token 的有效时间
@@ -369,15 +369,16 @@ public class UserLoginServiceImpl implements UserLoginService {
 //            httpServletResponse.addCookie(createCookie(Constants.TOKEN_NAME, token, -1, domain, true));
             // 返回原有的refresh token 给到前端
             refreshTokenResDto.setRefreshToken(refreshToken);
-            adminBaseResponse.setData(refreshTokenResDto);
-            adminBaseResponse.setCode(UserResultEnum.SUCCESS.getCode());
-            adminBaseResponse.setMessage(UserResultEnum.SUCCESS.getMsg());
+            refreshTokenResDto.setToken(token);
+            response.setData(refreshTokenResDto);
+            response.setCode(UserResultEnum.SUCCESS.getCode());
+            response.setMessage(UserResultEnum.SUCCESS.getMsg());
         } else {
             log.info("reqRefreshToken not equal to redis refreshToken");
-            adminBaseResponse.setCode(UserResultEnum.INVALID_REFRESH_TOKEN.getCode());
-            adminBaseResponse.setMessage(UserResultEnum.INVALID_REFRESH_TOKEN.getMsg());
+            response.setCode(UserResultEnum.INVALID_REFRESH_TOKEN.getCode());
+            response.setMessage(UserResultEnum.INVALID_REFRESH_TOKEN.getMsg());
         }
-        return adminBaseResponse;
+        return response;
     }
 
     private void cacheUserInfo(UserInfoDo userInfoDo) {
