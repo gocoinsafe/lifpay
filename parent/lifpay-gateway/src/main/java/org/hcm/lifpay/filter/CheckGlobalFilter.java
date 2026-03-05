@@ -73,7 +73,7 @@ public class CheckGlobalFilter implements GlobalFilter, Ordered {
 
     private final String getServerKeyIdUrl = "/api/serverKeyId/get";
 
-    private final List<String> needRsaUrl = Arrays.asList("/api/user/login,/api/user/refresh_token");
+    private final List<String> needRsaUrl = Arrays.asList("/api/user/login", "/api/user/refresh_token");
 
     @Value("#{'${whiteList}'.split(',')}")
     List<String> whiteList;
