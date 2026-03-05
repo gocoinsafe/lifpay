@@ -248,6 +248,8 @@ public class UserLoginServiceImpl implements UserLoginService {
         }
 
         userBaseResponse.setData(userInfo);
+        userBaseResponse.setCode(UserResultEnum.SUCCESS.getCode());
+        userBaseResponse.setMessage(UserResultEnum.SUCCESS.getMsg());
         return userBaseResponse;
     }
 
