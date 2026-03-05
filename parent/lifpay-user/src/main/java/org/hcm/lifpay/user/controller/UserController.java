@@ -2,6 +2,7 @@ package org.hcm.lifpay.user.controller;
 
 
 import com.alibaba.fastjson.JSON;
+import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.hcm.lifpay.common.BaseRequest;
@@ -9,6 +10,7 @@ import org.hcm.lifpay.common.BaseResponse;
 import org.hcm.lifpay.user.dto.req.*;
 import org.hcm.lifpay.user.dto.resp.AgreementListDto;
 import org.hcm.lifpay.user.dto.resp.LoginResponse;
+import org.hcm.lifpay.user.dto.resp.RefreshTokenResDto;
 import org.hcm.lifpay.user.dto.resp.UserInfoResp;
 import org.hcm.lifpay.user.service.AccountService;
 import org.hcm.lifpay.user.service.UserLoginService;
@@ -41,9 +43,9 @@ public class UserController {
      * @return 响应
      */
     @PostMapping(path = "/login")
-    public @ResponseBody BaseResponse<LoginResponse> login(@RequestBody LoginRequest request, HttpServletResponse httpServletResponse) {
+    public @ResponseBody BaseResponse<LoginResponse> login(@RequestBody LoginRequest request) {
         log.info("UserController.login:{}", JSON.toJSONString(request));
-        return userLoginService.login(request, httpServletResponse);
+        return userLoginService.login(request);
     }
 
 
@@ -57,6 +59,19 @@ public class UserController {
         return response;
     }
 
+
+    @PostMapping(path = "/refresh_token")
+    @ApiImplicitParam(value = "token过期 刷新token")
+    public @ResponseBody BaseResponse<RefreshTokenResDto> refreshToken(@RequestBody RefreshTokenReq request) {
+        log.info("refreshToken request: " + JSON.toJSONString(request));
+        BaseResponse<RefreshTokenResDto> response = userLoginService.checkRefreshToken(request);
+        log.info("refreshToken response: " + JSON.toJSONString(response));
+        return response;
+    }
+
+
+
+
     /**
      * 用户退出入口
      *
@@ -64,9 +79,9 @@ public class UserController {
      * @return 响应
      */
     @PostMapping(path = "/logout")
-    public BaseResponse logout(@RequestBody BaseRequest request, HttpServletResponse httpServletResponse) {
+    public BaseResponse logout(@RequestBody BaseRequest request) {
         log.info("UserController.logout:{}", JSON.toJSONString(request));
-        userLoginService.logout(request, httpServletResponse);
+        userLoginService.logout(request);
         log.info("finish logout " + JSON.toJSONString(request));
         return new BaseResponse();
     }

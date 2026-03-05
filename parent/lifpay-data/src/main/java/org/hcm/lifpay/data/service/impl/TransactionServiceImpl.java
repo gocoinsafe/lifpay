@@ -63,6 +63,8 @@ public class TransactionServiceImpl implements TransactionService {
             // 拷贝同名字段（简化赋值）
             BeanUtils.copyProperties(request, transactionDo);
 
+
+
             // 2. 补充公共字段（如果BaseEntity的自动填充未生效，手动设置）
             long currentTime = System.currentTimeMillis();
             transactionDo.setCreateTime(currentTime);

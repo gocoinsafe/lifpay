@@ -12,6 +12,7 @@ import org.hcm.lifpay.common.BaseRequest;
 import org.hcm.lifpay.common.BaseResponse;
 import org.hcm.lifpay.common.Constants;
 import org.hcm.lifpay.common.DigitalResultEnum;
+import org.hcm.lifpay.dto.UserInfo;
 import org.hcm.lifpay.misc.MiscClient;
 import org.hcm.lifpay.misc.common.VerifyCodeTypeEnum;
 import org.hcm.lifpay.misc.req.InnerGetVerifyCodeReq;
@@ -25,8 +26,10 @@ import org.hcm.lifpay.user.dao.repository.UserInfoRepository;
 import org.hcm.lifpay.user.dto.UserResultEnum;
 import org.hcm.lifpay.user.dto.req.IncludePkRequest;
 import org.hcm.lifpay.user.dto.req.LoginRequest;
+import org.hcm.lifpay.user.dto.req.RefreshTokenReq;
 import org.hcm.lifpay.user.dto.req.UpdateUserInfoReq;
 import org.hcm.lifpay.user.dto.resp.LoginResponse;
+import org.hcm.lifpay.user.dto.resp.RefreshTokenResDto;
 import org.hcm.lifpay.user.dto.resp.UserInfoResp;
 import org.hcm.lifpay.user.exception.LifpayException;
 import org.hcm.lifpay.user.remote.MiscRemoteService;
@@ -107,7 +110,7 @@ public class UserLoginServiceImpl implements UserLoginService {
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public BaseResponse<LoginResponse> login(LoginRequest request, HttpServletResponse httpServletResponse) {
+    public BaseResponse<LoginResponse> login(LoginRequest request) {
         logger.info("starting to do login verification.");
         // 1. 参数基础校验
         if (StringUtils.isEmpty(request.getContact()) || StringUtils.isEmpty(request.getPassword()) ||
@@ -220,7 +223,7 @@ public class UserLoginServiceImpl implements UserLoginService {
 
 
     @Override
-    public void logout(BaseRequest request, HttpServletResponse httpServletResponse) {
+    public void logout(BaseRequest request) {
         logout(request.getUserId().toString(), request.getDeviceId());
 //        httpServletResponse.addCookie(createCookie(Constants.TOKEN_NAME, null, 0, "", false));
     }
@@ -269,7 +272,7 @@ public class UserLoginServiceImpl implements UserLoginService {
             userInfoDo.setTelephone(contact);
             userInfoDo.setName(RegularExpressionUtil.extractMobileLast4(contact));
         }
-        userInfoDo.setLightning(userInfoDo.getName()+"@https://test.lifpay.me");
+        userInfoDo.setLightning(userInfoDo.getName()+ "@https://test.lifpay.me");
         userInfoDo.setPassword(encryptPwd);
         userInfoDo.setUserType(UserTypeEnum.PERSON.getType());
         userInfoDo.setStatus(UserStatusEnum.NORMAL.getType());
@@ -305,10 +308,86 @@ public class UserLoginServiceImpl implements UserLoginService {
         return response;
     }
 
+
+    @Override
+    public BaseResponse<RefreshTokenResDto> checkRefreshToken(RefreshTokenReq req) {
+        BaseResponse<RefreshTokenResDto> adminBaseResponse = new BaseResponse<>();
+        RefreshTokenResDto refreshTokenResDto = new RefreshTokenResDto();
+        String privateKey = decryptPrivateKey(req.getPrivateContent(), req.getAesKey().substring(0, 16));
+        Map<String, String> codeMap = decryptPublicKey(req.getRefreshToken(), privateKey);
+        logger.info("codeMap: {}", codeMap);
+        String reqRefreshToken = codeMap.get(PASSWORD);
+        String publicKey = codeMap.get(PUBLIC_KEY);
+        refreshTokenResDto.setPublicKey(publicKey);
+        // 根据refresh token 获取用户ID 看是否能获取的到
+        String tokenKey = String.format(RedisDBKey.GET_USER_ID_BY_REFRESH_TOKEN, reqRefreshToken);
+        String jsonToken = redisDS.getStr(tokenKey);
+        req.setDeviceId(getUserDeviceIdFrmPubKey(publicKey));
+
+        if (jsonToken == null) {
+            adminBaseResponse.setCode(UserResultEnum.INVALID_REFRESH_TOKEN.getCode());
+            adminBaseResponse.setMessage(UserResultEnum.INVALID_REFRESH_TOKEN.getMsg());
+            return adminBaseResponse;
+        }
+        JSONObject jsonObject = JSONObject.parseObject(jsonToken);
+        String userId = jsonObject.getString("userId");
+        log.info("checkRefreshToken 根据refresh token 获取到用户id: {}", userId);
+        // 1。根据用户ID 获取redis 中的 refresh token
+        String refreshToken = getRefreshToken(Long.parseLong(userId), req.getDeviceId());
+        log.info("根据用户ID和设备号获取到用户的 refreshToken: {}", refreshToken);
+        // 判断是否为空
+        if (StringUtils.isBlank(refreshToken)) {
+            log.info("refreshToken 为空");
+            // refresh token 失效用户重新登陆
+            adminBaseResponse.setCode(UserResultEnum.INVALID_REFRESH_TOKEN.getCode());
+            adminBaseResponse.setMessage(UserResultEnum.INVALID_REFRESH_TOKEN.getMsg());
+            return adminBaseResponse;
+        }
+        if (refreshToken.equals(reqRefreshToken)) {
+            // 延长refresh token 的有效时间
+            extensionRefreshToken(Long.parseLong(userId), req.getDeviceId(), refreshToken);
+            log.info("有效的refreshToken 延长refreshToken有效期");
+            // refresh token 是有效的 查看 token 是否是有效的
+            String token = getTokenValue(Long.parseLong(userId), getUserDeviceIdFrmPubKey(publicKey));
+            // 如果token 无效 则生成新的token 给到客户端
+            LambdaQueryWrapper<UserInfoDo> queryWrapper = new LambdaQueryWrapper<>();
+            queryWrapper.eq(UserInfoDo:: getStatus,UserStatusEnum.NORMAL.getType());
+            queryWrapper.eq(UserInfoDo:: getId, userId);
+            UserInfoDo userInfoDo = userInfoRepository.selectOne(queryWrapper);
+//            AdminUserDO adminUserDO = adminUserDao.getById(userId);
+            if (StringUtils.isBlank(token)) {
+                log.info("用户token 已失效，生成新的token给到前端");
+                token = getToken(Long.parseLong(userId), userInfoDo.getName(), publicKey);
+            } else {
+                log.info("在刷新refresh token 的时候，检测到token 依然还是有效的延长token并且返回老的token 给前端");
+                extensionUserToken(Long.parseLong(userId), userInfoDo.getName(), req.getDeviceId(), token, publicKey);
+                log.info("extensionUserToken userId: {}, deviceID:{}, token:{}", userId, req.getDeviceId(), token);
+            }
+            // 更新用户信息缓存
+            cacheUserInfo(userInfoDo);
+            //放token到cookie
+//            httpServletResponse.addCookie(createCookie(Constants.TOKEN_NAME, token, -1, domain, true));
+            // 返回原有的refresh token 给到前端
+            refreshTokenResDto.setRefreshToken(refreshToken);
+            adminBaseResponse.setData(refreshTokenResDto);
+            adminBaseResponse.setCode(UserResultEnum.SUCCESS.getCode());
+            adminBaseResponse.setMessage(UserResultEnum.SUCCESS.getMsg());
+        } else {
+            log.info("reqRefreshToken not equal to redis refreshToken");
+            adminBaseResponse.setCode(UserResultEnum.INVALID_REFRESH_TOKEN.getCode());
+            adminBaseResponse.setMessage(UserResultEnum.INVALID_REFRESH_TOKEN.getMsg());
+        }
+        return adminBaseResponse;
+    }
+
     private void cacheUserInfo(UserInfoDo userInfoDo) {
         // 从数据库获取用户信息
-//        AdminUserInfo adminUserInfo = adminUserDao.getAdminUserInfoById(adminUserDO.getId());
-//        AuthUtil.setUserInfoCache(adminUserInfo, tokenValidTime);
+        UserInfo userInfo = new UserInfo();
+        userInfo.setUserId(userInfoDo.getId());
+        userInfo.setUserName(userInfoDo.getName());
+
+//        AdminUserInfo adminUserInfo = adminUserDao.getAdminUserInfoById(userInfoDo.getId());
+        AuthUtil.setUserInfoCache(userInfo, tokenValidTime);
     }
 
     private Cookie createCookie(String key, String value, int maxAge, String domain, boolean httpOnly) {
@@ -426,66 +505,66 @@ public class UserLoginServiceImpl implements UserLoginService {
     }
 
 
-//
-//    /**
-//     * //从redis获取refresh_token
-//     *
-//     * @param userId 用户id
-//     * @return refresh_token
-//     */
-//    private String getRefreshToken(long userId, String deviceId) {
-//        String key = getRefreshTokenKey(String.valueOf(userId), deviceId);
-//        return redisDS.getStr(key);
-//    }
-//
-//    /**
-//     * //从redis获取token
-//     *
-//     * @param userId 用户id
-//     * @return token
-//     */
-//    private String getTokenValue(long userId, String deviceId) {
-//        String key = getTokenKey(String.valueOf(userId), deviceId);
-//        return redisDS.getStr(key);
-//    }
-//
-//    /**
-//     * //延长refresh token有效期
-//     *
-//     * @param userId 用户id deviceId 设备号
-//     *               value app 发送过来的refresh token
-//     */
-//    private void extensionRefreshToken(long userId, String deviceId, String value) {
-//        String key = getRefreshTokenKey(String.valueOf(userId), deviceId);
-//        redisDS.setex(key, value, refreshTokenValidTime);
-//        String refreshTokenKey = String.format(RedisDBKey.GET_ADMINUSER_ID_BY_REFRESH_TOKEN, value);
-//        JSONObject jsonObject = new JSONObject();
-//        jsonObject.put("userId", userId);
-//        jsonObject.put("deviceId", deviceId);
-//        jsonObject.put("timestamp", System.currentTimeMillis());
-//        redisDS.setex(refreshTokenKey, jsonObject.toJSONString(), refreshTokenValidTime);
-//    }
-//
-//    /**
-//     * //延长用户 token有效期
-//     *
-//     * @param userId 用户id deviceId 设备号
-//     *               value app 发送过来的refresh token
-//     */
-//    private void extensionUserToken(long userId, String userName, String deviceId, String value, String publicKey) {
-//        String key = getTokenKey(String.valueOf(userId), deviceId);
-//        redisDS.setex(key, value, tokenValidTime);
-//        log.info("extensionUserToken: {}", value);
-//        String tokenKey = String.format(RedisDBKey.GET_ADMINUSER_ID_BY_TOKEN, value);
-//        JSONObject jsonObject = new JSONObject();
-//        jsonObject.put("userId", userId);
-//        jsonObject.put("deviceId", deviceId);
-//        jsonObject.put("timestamp", System.currentTimeMillis());
-//        jsonObject.put("publicKey", publicKey);
-//        redisDS.setex(tokenKey, jsonObject.toJSONString(), tokenValidTime);
-//        String userNameKey = getUserNameTokenKey(String.valueOf(userId));
-//        redisDS.setex(userNameKey, userName, tokenValidTime);
-//    }
+
+    /**
+     * //从redis获取refresh_token
+     *
+     * @param userId 用户id
+     * @return refresh_token
+     */
+    private String getRefreshToken(long userId, String deviceId) {
+        String key = getRefreshTokenKey(String.valueOf(userId), deviceId);
+        return redisDS.getStr(key);
+    }
+
+    /**
+     * //从redis获取token
+     *
+     * @param userId 用户id
+     * @return token
+     */
+    private String getTokenValue(long userId, String deviceId) {
+        String key = getTokenKey(String.valueOf(userId), deviceId);
+        return redisDS.getStr(key);
+    }
+
+    /**
+     * //延长refresh token有效期
+     *
+     * @param userId 用户id deviceId 设备号
+     *               value app 发送过来的refresh token
+     */
+    private void extensionRefreshToken(long userId, String deviceId, String value) {
+        String key = getRefreshTokenKey(String.valueOf(userId), deviceId);
+        redisDS.setex(key, value, refreshTokenValidTime);
+        String refreshTokenKey = String.format(RedisDBKey.GET_USER_ID_BY_REFRESH_TOKEN, value);
+        JSONObject jsonObject = new JSONObject();
+        jsonObject.put("userId", userId);
+        jsonObject.put("deviceId", deviceId);
+        jsonObject.put("timestamp", System.currentTimeMillis());
+        redisDS.setex(refreshTokenKey, jsonObject.toJSONString(), refreshTokenValidTime);
+    }
+
+    /**
+     * //延长用户 token有效期
+     *
+     * @param userId 用户id deviceId 设备号
+     *               value app 发送过来的refresh token
+     */
+    private void extensionUserToken(long userId, String userName, String deviceId, String value, String publicKey) {
+        String key = getTokenKey(String.valueOf(userId), deviceId);
+        redisDS.setex(key, value, tokenValidTime);
+        log.info("extensionUserToken: {}", value);
+        String tokenKey = String.format(RedisDBKey.GET_USER_ID_BY_TOKEN, value);
+        JSONObject jsonObject = new JSONObject();
+        jsonObject.put("userId", userId);
+        jsonObject.put("deviceId", deviceId);
+        jsonObject.put("timestamp", System.currentTimeMillis());
+        jsonObject.put("publicKey", publicKey);
+        redisDS.setex(tokenKey, jsonObject.toJSONString(), tokenValidTime);
+        String userNameKey = getUserNameTokenKey(String.valueOf(userId));
+        redisDS.setex(userNameKey, userName, tokenValidTime);
+    }
 
     private String getUserDeviceIdFrmPubKey(String publicKey) {
         if (publicKey.startsWith(VALUE)) {

@@ -4,8 +4,10 @@ import org.hcm.lifpay.common.BaseRequest;
 import org.hcm.lifpay.common.BaseResponse;
 import org.hcm.lifpay.user.dto.req.IncludePkRequest;
 import org.hcm.lifpay.user.dto.req.LoginRequest;
+import org.hcm.lifpay.user.dto.req.RefreshTokenReq;
 import org.hcm.lifpay.user.dto.req.UpdateUserInfoReq;
 import org.hcm.lifpay.user.dto.resp.LoginResponse;
+import org.hcm.lifpay.user.dto.resp.RefreshTokenResDto;
 import org.hcm.lifpay.user.dto.resp.UserInfoResp;
 
 import javax.servlet.http.HttpServletResponse;
@@ -19,11 +21,11 @@ public interface UserLoginService {
      * @param request 请求
      * @return 返回
      */
-    BaseResponse<LoginResponse> login(LoginRequest request, HttpServletResponse httpServletResponse);
+    BaseResponse<LoginResponse> login(LoginRequest request);
 
 
 
-    void logout(BaseRequest request, HttpServletResponse httpServletResponse);
+    void logout(BaseRequest request);
 
 
     BaseResponse<UserInfoResp> getUserInfo(IncludePkRequest req);
@@ -32,7 +34,7 @@ public interface UserLoginService {
     BaseResponse updateUserInfo(UpdateUserInfoReq req);
 
 
-//    AdminBaseResponse<LoginResponse> phoneLogin(PhoneLoginRequest request, HttpServletResponse httpServletResponse);
+//    BaseResponse<LoginResponse> phoneLogin(PhoneLoginRequest request, HttpServletResponse httpServletResponse);
 
     /**
      * 刷新用户token
@@ -40,7 +42,7 @@ public interface UserLoginService {
      * @param req 请求
      * @return 返回
      */
-//    AdminBaseResponse<RefreshTokenResDto> checkRefreshToken(RefreshTokenReq req, HttpServletResponse httpServletResponse);
+    BaseResponse<RefreshTokenResDto> checkRefreshToken(RefreshTokenReq req);
 
-//    AdminBaseResponse<LoginUserInfoResponse> getLoginUserInfo(LoginUserInfoRequest request);
+//    BaseResponse<LoginUserInfoResponse> getLoginUserInfo(LoginUserInfoRequest request);
 }
