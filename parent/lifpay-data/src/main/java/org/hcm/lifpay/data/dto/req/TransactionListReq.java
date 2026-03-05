@@ -14,10 +14,10 @@ public class TransactionListReq extends BaseRequest {
 
 
     @Schema(description = "页码")
-    Integer pageNo;
+    Long pageNo;
 
     @Schema(description = "页数")
-    Integer pageSize;
+    Long pageSize;
 
 
 }

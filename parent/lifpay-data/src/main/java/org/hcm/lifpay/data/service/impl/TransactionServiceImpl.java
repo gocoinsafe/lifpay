@@ -45,6 +45,17 @@ public class TransactionServiceImpl implements TransactionService {
     public BaseResponse<?> transactionSubmit(TransactionSubmitReq request) {
         logger.info("transactionSubmit.req:{}", JSON.toJSONString(request));
         BaseResponse response = new BaseResponse<>();
+        if (null == request.getUserId() && StringUtils.isEmpty(request.getUserPrimaryKey())){
+            response.setCode(DataResultEnum.PARAM_ERROR.getCode());
+            response.setMessage(DataResultEnum.PARAM_ERROR.getDesc());
+            return response;
+        }
+        if (StringUtils.isEmpty(request.getTradeId())){
+            response.setCode(DataResultEnum.TRANSACTION_ID_ISNULL_ERROR.getCode());
+            response.setMessage(DataResultEnum.TRANSACTION_ID_ISNULL_ERROR.getDesc());
+            return response;
+        }
+
         try {
 
             // 1. 构建数据库实体
@@ -68,12 +79,13 @@ public class TransactionServiceImpl implements TransactionService {
             }
 
             logger.info("交易记录插入成功，交易ID：{}，tradeHash：{}", transactionDo.getId(), request.getTradeHash());
-            return response;
         } catch (Exception e) {
             logger.error("提交交易记录异常，request：{}", JSON.toJSONString(request), e);
             throw new RuntimeException("交易记录提交失败：" + e.getMessage());
         }
-
+        response.setCode(DataResultEnum.SUCCESS.getCode());
+        response.setMessage(DataResultEnum.SUCCESS.getDesc());
+        return response;
     }
 
 
@@ -116,7 +128,7 @@ public class TransactionServiceImpl implements TransactionService {
             }
         }
 
-        response.setData(CommonPage.restPage(page.getTotal(), page.getCurrent(), page.getSize(), page.getPages(), transactionRespList));
+        response.setData(CommonPage.restPage(page.getTotal(), request.getPageNo(), request.getPageSize(), page.getPages(), transactionRespList));
 
         return response;
     }

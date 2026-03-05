@@ -9,7 +9,7 @@ public enum DataResultEnum {
     /**
      * 成功
      */
-    SUCCESS(0, "Success","成功"),
+    SUCCESS(200, "Success","成功"),
     /**
      * 参数错误
      */
@@ -19,6 +19,7 @@ public enum DataResultEnum {
     UNREGISTER_BREEZ_API_ERROR(20002, "Unregister Breez Interface Error","取消注册Breez接口报错"),
 
     TRANSACTION_INSERTION_FAILED_ERROR(20003, "Transaction record insertion failed","交易记录插入失败"),
+    TRANSACTION_ID_ISNULL_ERROR(20004, "The external transaction ID number cannot be empty.","外部交易id号不能为空"),
 
     ;
 
