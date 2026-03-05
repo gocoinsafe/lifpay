@@ -24,10 +24,7 @@ import org.hcm.lifpay.user.constant.UserTypeEnum;
 import org.hcm.lifpay.user.dao.entity.UserInfoDo;
 import org.hcm.lifpay.user.dao.repository.UserInfoRepository;
 import org.hcm.lifpay.user.dto.UserResultEnum;
-import org.hcm.lifpay.user.dto.req.IncludePkRequest;
-import org.hcm.lifpay.user.dto.req.LoginRequest;
-import org.hcm.lifpay.user.dto.req.RefreshTokenReq;
-import org.hcm.lifpay.user.dto.req.UpdateUserInfoReq;
+import org.hcm.lifpay.user.dto.req.*;
 import org.hcm.lifpay.user.dto.resp.LoginResponse;
 import org.hcm.lifpay.user.dto.resp.RefreshTokenResDto;
 import org.hcm.lifpay.user.dto.resp.UserInfoResp;
@@ -155,11 +152,11 @@ public class UserLoginServiceImpl implements UserLoginService {
             verifyCodeReq.setType(request.getType());
             verifyCodeReq.setVerifyCode(request.getVerifyCode());
 
-//            BaseResponse<GetVerifyCodeResp> miscResp = miscRemoteService.getVerifyCode(verifyCodeReq);
-//            if (DigitalResultEnum.SUCCESS.getCode() != miscResp.getCode()){
-//                logger.info("login.miscResp.resp:{}", JSON.toJSONString(miscResp));
-//                return BaseResponse.fail(miscResp.getCode(),miscResp.getMessage());
-//            }
+            BaseResponse<GetVerifyCodeResp> miscResp = miscRemoteService.getVerifyCode(verifyCodeReq);
+            if (DigitalResultEnum.SUCCESS.getCode() != miscResp.getCode()){
+                logger.info("login.miscResp.resp:{}", JSON.toJSONString(miscResp));
+                return BaseResponse.fail(miscResp.getCode(),miscResp.getMessage());
+            }
             // 5. 查询用户（合并查询逻辑）
             LambdaQueryWrapper<UserInfoDo> queryWrapper = new LambdaQueryWrapper<>();
             queryWrapper.eq(UserInfoDo:: getStatus,UserStatusEnum.NORMAL.getType());
@@ -274,7 +271,7 @@ public class UserLoginServiceImpl implements UserLoginService {
             userInfoDo.setTelephone(contact);
             userInfoDo.setName(RegularExpressionUtil.extractMobileLast4(contact));
         }
-        userInfoDo.setLightning(userInfoDo.getName()+ "@https://test.lifpay.me");
+
         userInfoDo.setPassword(encryptPwd);
         userInfoDo.setUserType(UserTypeEnum.PERSON.getType());
         userInfoDo.setStatus(UserStatusEnum.NORMAL.getType());
@@ -310,6 +307,25 @@ public class UserLoginServiceImpl implements UserLoginService {
         return response;
     }
 
+    @Override
+    public BaseResponse updateLightningAddress(UserLightningAddressReq req) {
+        logger.info("updateLightningAddress.req:{}",JSON.toJSONString(req));
+        BaseResponse response = new BaseResponse<>();
+
+        // 根据用户id 查询用户信息
+        UserInfoDo userInfoDO = userInfoRepository.selectById(req.getUserId());
+        if (null == userInfoDO){
+            return BaseResponse.fail(UserResultEnum.USER_NOT_EXISTS.getCode(),UserResultEnum.USER_NOT_EXISTS.getMsg());
+        }
+        userInfoDO.setLightning(req.getLightningAddress());
+        // 更新用户的Lightning地址
+        userInfoRepository.updateById(userInfoDO);
+
+
+        response.setCode(UserResultEnum.SUCCESS.getCode());
+        response.setMessage(UserResultEnum.SUCCESS.getMsg());
+        return response;
+    }
 
     @Override
     public BaseResponse<RefreshTokenResDto> checkRefreshToken(RefreshTokenReq req) {

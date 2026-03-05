@@ -135,4 +135,15 @@ public class UserController {
     }
 
 
+    @PostMapping(path = "/update/lightning/address")
+    @ApiOperation(value = "上传用户Lightning地址")
+    public BaseResponse updateLightningAddress(@Valid @RequestBody UserLightningAddressReq req){
+        log.info("updateLightningAddress req:{} ", JSON.toJSONString(req));
+        BaseResponse response = userLoginService.updateLightningAddress(req);
+        log.info("updateLightningAddress response "+ JSON.toJSONString(response));
+        return response;
+    }
+
+
+
 }

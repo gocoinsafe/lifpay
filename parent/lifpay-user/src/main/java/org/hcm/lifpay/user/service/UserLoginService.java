@@ -2,10 +2,7 @@ package org.hcm.lifpay.user.service;
 
 import org.hcm.lifpay.common.BaseRequest;
 import org.hcm.lifpay.common.BaseResponse;
-import org.hcm.lifpay.user.dto.req.IncludePkRequest;
-import org.hcm.lifpay.user.dto.req.LoginRequest;
-import org.hcm.lifpay.user.dto.req.RefreshTokenReq;
-import org.hcm.lifpay.user.dto.req.UpdateUserInfoReq;
+import org.hcm.lifpay.user.dto.req.*;
 import org.hcm.lifpay.user.dto.resp.LoginResponse;
 import org.hcm.lifpay.user.dto.resp.RefreshTokenResDto;
 import org.hcm.lifpay.user.dto.resp.UserInfoResp;
@@ -34,8 +31,7 @@ public interface UserLoginService {
     BaseResponse updateUserInfo(UpdateUserInfoReq req);
 
 
-//    BaseResponse<LoginResponse> phoneLogin(PhoneLoginRequest request, HttpServletResponse httpServletResponse);
-
+    BaseResponse updateLightningAddress(UserLightningAddressReq req);
     /**
      * 刷新用户token
      *
