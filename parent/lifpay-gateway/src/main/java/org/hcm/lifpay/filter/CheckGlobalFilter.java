@@ -190,6 +190,7 @@ public class CheckGlobalFilter implements GlobalFilter, Ordered {
 
     private boolean advanceInvalidToken(String timestamp, String userId, String token) {
         long tokenTimestamp = Long.parseLong(timestamp);
+        //token 生成时间 + 有效时长 - 1 分钟 → 也就是 “距离 token 过期只剩 1 分钟” 的临界时间点
         long count = tokenTimestamp + tokenValidTime * 1000L - 60000;
         if (System.currentTimeMillis() > count) {
             log.error("error: token timeout soon; userId:{}; token:{}", userId, token);
