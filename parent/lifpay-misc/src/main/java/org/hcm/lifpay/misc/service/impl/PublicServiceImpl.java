@@ -108,7 +108,7 @@ public class PublicServiceImpl extends ServiceImpl<VerifyCodeRepository, VerifyC
         if (VerifyCodeTypeEnum.PHONE.getType().equals(req.getType())) {
             try {
                 // 调用短信发送（复用单例client，性能优化）
-                SendSmsResponse sendSmsResponse = smsProvider.buildSMSRequest(req.getContact(), verifyCode);
+                SendSmsResponse sendSmsResponse = smsProvider.buildSMSRequest(req.getArea() + req.getContact(), verifyCode);
                 verifyCodeDo.setType(VerifyCodeTypeEnum.PHONE.getType());
                 verifyCodeDo.setArea(req.getArea());
 
