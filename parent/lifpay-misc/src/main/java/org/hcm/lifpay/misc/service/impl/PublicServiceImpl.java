@@ -60,7 +60,7 @@ public class PublicServiceImpl extends ServiceImpl<VerifyCodeRepository, VerifyC
     @Autowired
     private MailService mailService;
 
-    @Resource
+//    @Resource
 //    private SMSProvider smsProvider;
 
     // 核心修复：去掉@Value默认值冒号后的空格
