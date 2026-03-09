@@ -4,6 +4,7 @@ import com.alibaba.druid.util.StringUtils;
 import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.tencentcloudapi.common.exception.TencentCloudSDKException;
+import com.tencentcloudapi.sms.v20210111.SmsClient;
 import com.tencentcloudapi.sms.v20210111.models.SendSmsResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.bouncycastle.util.encoders.Hex;
@@ -19,7 +20,6 @@ import org.hcm.lifpay.misc.dto.req.GetVerifyCodeReq;
 import org.hcm.lifpay.misc.dto.resp.CoinGeckoRateResp;
 import org.hcm.lifpay.misc.dto.resp.ExchangeRateModel;
 import org.hcm.lifpay.misc.dto.resp.RateModel;
-import org.hcm.lifpay.misc.providers.SMSProvider;
 import org.hcm.lifpay.misc.service.MailService;
 import org.hcm.lifpay.misc.service.PublicService;
 import org.hcm.lifpay.redis.RedisDS;
@@ -35,8 +35,15 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
+import com.alibaba.fastjson.JSON;
+import com.tencentcloudapi.sms.v20210111.models.SendSmsRequest;
+import com.tencentcloudapi.common.Credential;
+//导入可选配置类
+import com.tencentcloudapi.common.profile.ClientProfile;
+import com.tencentcloudapi.common.profile.HttpProfile;
 
 import javax.annotation.Resource;
+import java.util.concurrent.locks.ReentrantLock;
 
 
 @Slf4j
@@ -54,7 +61,29 @@ public class PublicServiceImpl extends ServiceImpl<VerifyCodeRepository, VerifyC
     private MailService mailService;
 
     @Resource
-    private SMSProvider smsProvider;
+//    private SMSProvider smsProvider;
+
+    // 核心修复：去掉@Value默认值冒号后的空格
+    @Value("${misc.sms.secretId:}") // 无默认值，强制从Nacos读取（便于发现配置缺失）
+    private String secretId;
+
+    @Value("${misc.sms.secretKey:}")
+    private String secretKey;
+
+    @Value("${misc.sms.sdkAppId:2400001156}") // 去掉空格
+    private String sdkAppId;
+
+    @Value("${misc.sms.signName:LifPay}") // 去掉空格
+    private String signName;
+
+    @Value("${misc.sms.templateId:2929134}") // 去掉空格
+    private String templateId;
+
+    // ========== 性能核心：单例复用SmsClient（只初始化一次） ==========
+    private SmsClient smsClient;
+
+    private final ReentrantLock lock = new ReentrantLock();
+
 
     @Value("${message.sms.workload:00}")
     String workload;
@@ -107,8 +136,19 @@ public class PublicServiceImpl extends ServiceImpl<VerifyCodeRepository, VerifyC
         // 2. 手机号短信逻辑
         if (VerifyCodeTypeEnum.PHONE.getType().equals(req.getType())) {
             try {
-                // 调用短信发送（复用单例client，性能优化）
-                SendSmsResponse sendSmsResponse = smsProvider.buildSMSRequest(req.getArea() + req.getContact(), verifyCode);
+                // 拼接完整手机号（E.164格式）
+                String fullPhone = req.getArea() + req.getContact();
+                // 校验手机号格式
+                if (StringUtils.isEmpty(fullPhone) || !fullPhone.startsWith("+")) {
+                    throw new IllegalArgumentException("手机号必须为E.164格式（+国家码+手机号），当前值：" + maskPhone(fullPhone));
+                }
+                // 校验核心配置
+                if (StringUtils.isEmpty(secretId) || StringUtils.isEmpty(secretKey)) {
+                    throw new RuntimeException("短信配置未初始化：secretId/secretKey为空");
+                }
+
+                // 构建短信请求并发送
+                SendSmsResponse sendSmsResponse = sendSms(fullPhone, verifyCode);
                 verifyCodeDo.setType(VerifyCodeTypeEnum.PHONE.getType());
                 verifyCodeDo.setArea(req.getArea());
 
@@ -144,6 +184,68 @@ public class PublicServiceImpl extends ServiceImpl<VerifyCodeRepository, VerifyC
         return BaseResponse.success("验证码发送成功");
     }
 
+
+    // ========== 新增：短信发送核心方法（替代原SMSProvider.buildSMSRequest） ==========
+    private SendSmsResponse sendSms(String fullPhone, String verifyCode) throws TencentCloudSDKException {
+        // 构建短信请求参数
+        SendSmsRequest req = new SendSmsRequest();
+        req.setSmsSdkAppId(sdkAppId);
+        req.setSignName(signName);
+        req.setTemplateId(templateId);
+        req.setSenderId("");
+        req.setSessionContext("xxx");
+        req.setExtendCode("");
+        req.setPhoneNumberSet(new String[]{fullPhone});
+        req.setTemplateParamSet(new String[]{MiscConstant.LIFPAY, verifyCode});
+
+        // 发送请求（复用SmsClient）
+        SendSmsResponse res = getSmsClient().SendSms(req);
+        logger.info("短信发送成功，手机号：{}，RequestId：{}", maskPhone(fullPhone), res.getRequestId());
+        return res;
+    }
+
+    // ========== 新增：获取SmsClient（懒加载+线程安全） ==========
+    private SmsClient getSmsClient() {
+        if (smsClient == null || !isConfigValid()) {
+            lock.lock();
+            try {
+                if (smsClient == null || !isConfigValid()) {
+                    logger.info("初始化/重建SmsClient（首次加载/配置变更）");
+                    smsClient = createSmsClient();
+                }
+            } finally {
+                lock.unlock();
+            }
+        }
+        return smsClient;
+    }
+
+    // ========== 新增：创建SmsClient ==========
+    private SmsClient createSmsClient() {
+        try {
+            Credential cred = new Credential(secretId, secretKey);
+            HttpProfile httpProfile = new HttpProfile();
+            httpProfile.setConnTimeout(60);
+            httpProfile.setWriteTimeout(10);
+            httpProfile.setReadTimeout(10);
+            httpProfile.setEndpoint(MiscConstant.ENDPOINT);
+
+            ClientProfile clientProfile = new ClientProfile();
+            clientProfile.setSignMethod(MiscConstant.SIGN_METHOD);
+            clientProfile.setHttpProfile(httpProfile);
+
+            return new SmsClient(cred, MiscConstant.SMS_REGION, clientProfile);
+        } catch (Exception e) {
+            logger.error("创建SmsClient失败", e);
+            throw new RuntimeException("短信客户端初始化失败", e);
+        }
+    }
+
+    // ========== 新增：辅助方法 ==========
+    // 校验配置是否有效
+    private boolean isConfigValid() {
+        return !StringUtils.isEmpty(secretId) && !StringUtils.isEmpty(secretKey);
+    }
 
 
     public Boolean smsPowVerify(String phone, Long timestamp, Integer random) {
@@ -226,5 +328,16 @@ public class PublicServiceImpl extends ServiceImpl<VerifyCodeRepository, VerifyC
         }
 
         return response;
+    }
+
+
+
+    // ========== 工具方法：手机号脱敏（日志合规） ==========
+    private String maskPhone(String phone) {
+        if (StringUtils.isEmpty(phone) || phone.length() < 8) {
+            return phone;
+        }
+        // 脱敏规则：+8615970297950 → +86159****7950
+        return phone.substring(0, 5) + "****" + phone.substring(9);
     }
 }
