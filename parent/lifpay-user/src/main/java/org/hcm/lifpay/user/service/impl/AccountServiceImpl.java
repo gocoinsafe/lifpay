@@ -69,6 +69,7 @@ public class AccountServiceImpl implements AccountService {
             queryDto.setName(info.getName());
             queryDto.setType(info.getType().toString());
             queryDto.setUrl(info.getUrl());
+            queryDto.setPath(info.getPath());
             queryDtoList.add(queryDto);
         }
         agreementList.setList(queryDtoList);
@@ -116,7 +117,7 @@ public class AccountServiceImpl implements AccountService {
             queryDto.setName(info.getName());
             queryDto.setType(info.getType().toString());
             queryDto.setUrl(info.getUrl());
-
+            queryDto.setPath(info.getPath());
             queryDtoList.add(queryDto);
         }
         agreementList.setList(queryDtoList);

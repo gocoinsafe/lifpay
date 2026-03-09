@@ -20,6 +20,9 @@ public class AgreementQueryDto {
     @Schema(description = "协议地址")
     private String url;
 
+    @Schema(description = "path路径")
+    private String path;
+
     @Schema(description = "协议版本")
     private String agreementVersion;
 

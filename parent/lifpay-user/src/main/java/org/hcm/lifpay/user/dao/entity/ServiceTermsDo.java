@@ -55,6 +55,14 @@ public class ServiceTermsDo extends BaseEntity implements Serializable  {
     @TableField("url")
     private String url;
 
+
+    /**
+     * path路径
+     */
+
+    @TableField("path")
+    private String path;
+
     /**
      * 版本号
      */
