@@ -29,9 +29,9 @@ import javax.annotation.PostConstruct;
 public class SMSProvider {
 
     // ========== 仅保留核心配置的@Value注入（修复secretKey的key错误） ==========
-    @Value("${misc.sms.secretId: IKIDBG9pIbgYFiAa1PbnqhMn370hBfz61WxU}")
+    @Value("${misc.sms.secretId}")
     private String secretId;
-    @Value("${misc.sms.secretKey: c3HH4e045xfDc2IORL1UmtoVyDHIBrMe}") // 修复：原用了secretId的key
+    @Value("${misc.sms.secretKey}") // 修复：原用了secretId的key
     private String secretKey;
     @Value("${misc.sms.sdkAppId: 2400001156}")
     private String sdkAppId;
