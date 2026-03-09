@@ -158,7 +158,7 @@ public class UserLoginServiceImpl implements UserLoginService {
             // 6. 注册/登录逻辑
             if (userInfoDo == null) {
                 // 注册（独立事务方法）
-                user = registerUser(request.getContact(), plainPwd, request.getType());
+                user = registerUser(request.getContact(), localEncPwd, request.getType());
             } else {
                 // 校验用户状态
                 if (UserStatusEnum.FREEZE.getType().equals(userInfoDo.getStatus())) {
