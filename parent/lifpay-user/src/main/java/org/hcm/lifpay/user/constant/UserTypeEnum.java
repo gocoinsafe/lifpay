@@ -9,8 +9,8 @@ import lombok.Getter;
 public enum UserTypeEnum {
 
 
-    PERSON(0, "person", "个人"),
-    ENTERPRISE(1, "enterprise", "企业"),
+    PERSON(1, "person", "个人"),
+    ENTERPRISE(2, "enterprise", "企业"),
     ;
 
     private final Integer type;
