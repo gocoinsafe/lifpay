@@ -16,4 +16,18 @@ public class Constant {
 
 
 
+    public static class QrCode{
+
+        public enum QrCodeStatus {
+            // wait scan
+            WAIT_SCAN,
+            // 已扫码
+            WAIT_CONFIRM,
+            // 已确认
+            CONFIRM_LOGIN,
+            // invalid
+            INVALID
+        }
+    }
+
 }

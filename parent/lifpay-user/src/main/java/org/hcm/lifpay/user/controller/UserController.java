@@ -4,14 +4,13 @@ package org.hcm.lifpay.user.controller;
 import com.alibaba.fastjson.JSON;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiResponse;
+import io.swagger.annotations.ApiResponses;
 import lombok.extern.slf4j.Slf4j;
 import org.hcm.lifpay.common.BaseRequest;
 import org.hcm.lifpay.common.BaseResponse;
 import org.hcm.lifpay.user.dto.req.*;
-import org.hcm.lifpay.user.dto.resp.AgreementListDto;
-import org.hcm.lifpay.user.dto.resp.LoginResponse;
-import org.hcm.lifpay.user.dto.resp.RefreshTokenResDto;
-import org.hcm.lifpay.user.dto.resp.UserInfoResp;
+import org.hcm.lifpay.user.dto.resp.*;
 import org.hcm.lifpay.user.service.AccountService;
 import org.hcm.lifpay.user.service.UserLoginService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,8 +18,6 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
-
-//import javax.servlet.http.HttpServletResponse;
 
 
 @RestController
@@ -145,5 +142,53 @@ public class UserController {
     }
 
 
+
+
+    @PostMapping(path = "/login/qrCode/create")
+    @ApiOperation(value = "创建扫码登录二维码", tags = "1.23.0")
+    public BaseResponse<CreateLoginQrCodeResp> createLoginQrCode(@RequestBody CreateLoginQrCodeReq req){
+        log.info("createLoginQrCode "+ JSON.toJSONString(req));
+        return userLoginService.createLoginQrCode(req);
+    }
+
+    @PostMapping(path = "/login/qrCode/scan")
+    @ApiOperation(value = "扫登录二维码", tags = "1.23.0")
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "描述：成功"),
+            @ApiResponse(code = 6075, message = "描述：登录二维码失效")
+    })
+    public BaseResponse<ScanQrCodeResp> scanLoginQrCode(@RequestBody LoginQrCodeReq req){
+        log.info("scanLoginQrCode "+ JSON.toJSONString(req));
+        return userLoginService.scanLoginQrCode(req);
+    }
+
+    @PostMapping(path = "/getLoginQrCodeState")
+    @ApiOperation(value = "查询登录二维码", tags = "1.23.0")
+    @ApiResponses({
+            @ApiResponse(code = 0, message = "描述：成功"),
+            @ApiResponse(code = 6075, message = "描述：登录二维码失效")
+    })
+    public BaseResponse<LoginQrCodeStateResp> getLoginQrCodeState(@RequestBody LoginQrCodeReq req, HttpServletResponse httpServletResponse){
+        log.info("getLoginQrCodeState "+ JSON.toJSONString(req));
+        return userLoginService.getLoginQrCodeState(req, httpServletResponse);
+    }
+
+    @PostMapping(path = "/login/qrCode/cancel")
+    @ApiOperation(value = "取消登录", tags = "1.23.0")
+    public BaseResponse cancelLogin(@RequestBody LoginQrCodeReq req){
+        log.info("cancelLogin "+ JSON.toJSONString(req));
+        return userLoginService.cancelLogin(req);
+    }
+
+    @PostMapping(path = "/login/confirm")
+    @ApiOperation(value = "登录确认", tags = "1.23.0")
+    @ApiResponses({
+            @ApiResponse(code = 0, message = "描述：成功"),
+            @ApiResponse(code = 6075, message = "描述：登录二维码失效")
+    })
+    public BaseResponse confirmLogin(@RequestBody LoginQrCodeReq req){
+        log.info("confirmLogin "+ JSON.toJSONString(req));
+        return userLoginService.confirmLogin(req);
+    }
 
 }
