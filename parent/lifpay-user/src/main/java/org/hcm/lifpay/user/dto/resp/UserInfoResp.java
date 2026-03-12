@@ -26,6 +26,9 @@ public class UserInfoResp {
     @Schema(description = "头像URL")
     private String iconUrl;
 
+    @Schema(description = "简介")
+    private String bio;
+
     @Schema(description = "状态：0正常，1冻结，2注销，3未激活")
     private Integer status;
 

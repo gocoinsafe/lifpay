@@ -237,6 +237,7 @@ public class UserLoginServiceImpl implements UserLoginService {
             userInfo.setLightning(userInfoDO.getLightning());
             userInfo.setStatus(userInfoDO.getStatus());
             userInfo.setIconUrl(userInfoDO.getIconUrl());
+            userInfo.setBio(userInfoDO.getBio());
             userInfo.setUserType(userInfoDO.getUserType());
             userInfo.setCreateTime(userInfoDO.getCreateTime());
         }
