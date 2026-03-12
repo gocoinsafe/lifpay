@@ -8,8 +8,6 @@ import lombok.Getter;
 @AllArgsConstructor
 public enum TradeStatusEnum {
 
-
-
     COMPLETED(1, "completed", "完成"),
     PENDING(2, "pending", "处理中"),
     FAILED(3, "failed", "失败"),
@@ -39,6 +37,15 @@ public enum TradeStatusEnum {
             }
         }
         // 3. 无匹配值返回null
+        return null;
+    }
+
+    public static TradeStatusEnum getFromName(String name) {
+        for (TradeStatusEnum b : TradeStatusEnum.values()) {
+            if (b.getName().equals(name)) {
+                return b;
+            }
+        }
         return null;
     }
 
