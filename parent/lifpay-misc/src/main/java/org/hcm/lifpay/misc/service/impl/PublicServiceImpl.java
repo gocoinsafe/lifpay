@@ -85,7 +85,7 @@ public class PublicServiceImpl extends ServiceImpl<VerifyCodeRepository, VerifyC
     private final ReentrantLock lock = new ReentrantLock();
 
 
-    @Value("${message.sms.workload:00}")
+    @Value("${misc.sms.workload:00}")
     String workload;
 
     @Value("${misc.verifyCode.title}")
@@ -122,9 +122,9 @@ public class PublicServiceImpl extends ServiceImpl<VerifyCodeRepository, VerifyC
 
         // 验证工作量证明随机数
         boolean powVerify = smsPowVerify(req.getContact(), req.getTimestamp(), req.getRandom());
-//        if (!powVerify) {
-//            return BaseResponse.fail(MiscResultEnum.INVALID_RANDOM.getCode(),MiscResultEnum.INVALID_RANDOM.getDesc());
-//        }
+        if (!powVerify) {
+            return BaseResponse.fail(MiscResultEnum.INVALID_RANDOM.getCode(),MiscResultEnum.INVALID_RANDOM.getDesc());
+        }
 
 
         BaseResponse<String> response = new BaseResponse<>();
