@@ -94,23 +94,6 @@ public class CheckGlobalFilter implements GlobalFilter, Ordered {
         String uri = request.getPath().value();
         log.info("uri =======" + uri);
 
-        List<String> contentTypeList = request.getHeaders().get("Content-Type");
-        boolean isMultipartRequest = false;
-        if (contentTypeList != null) {
-            for (String contentType : contentTypeList) {
-                // 判断是否为文件上传请求（multipart/form-data）
-                if (contentType.startsWith(MediaType.MULTIPART_FORM_DATA_VALUE)) {
-                    isMultipartRequest = true;
-                    break;
-                }
-            }
-        }
-        // 文件上传请求直接放行，不执行后续JSON解析逻辑
-        if (isMultipartRequest) {
-            log.info("文件上传请求，直接放行：{}", uri);
-            return chain.filter(exchange);
-        }
-
         Flux<DataBuffer> cachedBody = exchange.getAttribute(CacheBodyUtil.CACHE_REQUEST_BODY_OBJECT_KEY);
         log.info("cachedBody====" + JSON.toJSONString(cachedBody));
         if (cachedBody == null) {

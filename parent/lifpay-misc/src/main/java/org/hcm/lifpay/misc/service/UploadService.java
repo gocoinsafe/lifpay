@@ -1,6 +1,7 @@
 package org.hcm.lifpay.misc.service;
 
 import org.hcm.lifpay.common.BaseResponse;
+import org.hcm.lifpay.misc.dto.req.UploadFileReq;
 import org.hcm.lifpay.misc.dto.resp.TencentFileModel;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -14,6 +15,6 @@ public interface UploadService {
      * @return 头像在COS上的访问URL
      * @throws Exception 上传异常
      */
-    BaseResponse<TencentFileModel> uploadFile(MultipartFile file, Integer sceneFlag) throws Exception;
+    BaseResponse<TencentFileModel> uploadFile(UploadFileReq req)  throws Exception;
 
 }
