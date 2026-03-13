@@ -65,6 +65,7 @@ public class TransactionServiceImpl implements TransactionService {
                     // 1. 构建数据库实体
                     UserTransactionDo transactionDo = new UserTransactionDo();
                     transactionDo.setUserId(request.getUserId());
+                    transactionDo.setUserPrimaryKey(data.getUserPrimaryKey());
                     transactionDo.setTradeId(data.getTradeId());
                     transactionDo.setTradeHash(data.getTradeHash());
                     transactionDo.setAmount(data.getAmount());

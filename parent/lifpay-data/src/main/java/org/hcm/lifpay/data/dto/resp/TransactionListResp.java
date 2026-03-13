@@ -2,6 +2,9 @@ package org.hcm.lifpay.data.dto.resp;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
+import org.hcm.lifpay.data.common.TradeMethodEnum;
+import org.hcm.lifpay.data.common.TradeStatusEnum;
+import org.hcm.lifpay.data.common.TradeTypeEnum;
 import org.hcm.lifpay.data.dao.entity.UserTransactionDo;
 
 import java.math.BigDecimal;
@@ -34,13 +37,13 @@ public class TransactionListResp {
     String fee;
 
     @Schema(description = "支付方式：1:lightning,2:其他")
-    Integer method;
+    String method;
 
     @Schema(description = "交易类型：1:发送，2:接收")
-    Integer tradeType;
+    String tradeType;
 
     @Schema(description = "订单状态：0-待处理 1-交易成功 2-交易失败 3-已撤销")
-    Integer status;
+    String status;
 
     @Schema(description = "法币（如USD/CNY）")
     String fiatCurrency;
@@ -76,9 +79,9 @@ public class TransactionListResp {
         this.setTradeHash(data.getTradeHash());
         this.setAmount(data.getAmount());
         this.setFee(data.getFees());
-        this.setMethod(data.getMethod());
-        this.setTradeType(data.getTradeType());
-        this.setStatus(data.getStatus());
+        this.setMethod(TradeMethodEnum.getByType(data.getMethod()).getName());
+        this.setTradeType(TradeTypeEnum.getByType(data.getTradeType()).getName());
+        this.setStatus(TradeStatusEnum.getByType(data.getStatus()).getName());
         this.setFiatCurrency(data.getFiatCurrency());
         if (data != null) {
             // 先获取BigDecimal类型的法币金额
