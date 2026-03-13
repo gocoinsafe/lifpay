@@ -228,6 +228,11 @@
             <groupId>org.hcm.lifpay</groupId>
             <artifactId>lifpay-misc-share</artifactId>
         </dependency>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <scope>test</scope>
+        </dependency>
 
     </dependencies>
 
