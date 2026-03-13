@@ -126,7 +126,8 @@ public class UploadServiceImpl implements UploadService {
 
             // 拼接访问URL
             String fileAccessUrl = StrUtil.join("/", cosBaseUrl, cosFilePath);
-            tencentFileModel.setFilePath(fileAccessUrl);
+            tencentFileModel.setUrl(fileAccessUrl);
+            tencentFileModel.setFilePath(cosFilePath);
 
             // 返回成功
             response.setCode(200);
