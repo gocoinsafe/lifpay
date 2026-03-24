@@ -24,6 +24,7 @@
         <module>lifpay-user</module>
         <module>lifpay-misc-share</module>
         <module>lifpay-data</module>
+        <module>lifpay-admgateway</module>
     </modules>
 
 
@@ -61,6 +62,7 @@
         <lifpay-admin.version>1.0-SNAPSHOT</lifpay-admin.version>
         <lifpay-user.version>1.0-SNAPSHOT</lifpay-user.version>
         <lifpay-data.version>1.0-SNAPSHOT</lifpay-data.version>
+        <lifpay-admgateway.version>1.0-SNAPSHOT</lifpay-admgateway.version>
     </properties>
 
     <dependencyManagement>
