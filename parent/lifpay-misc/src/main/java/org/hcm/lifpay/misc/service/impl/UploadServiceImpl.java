@@ -4,12 +4,14 @@ package org.hcm.lifpay.misc.service.impl;
 import cn.hutool.core.io.FileUtil;
 import cn.hutool.core.util.IdUtil;
 import cn.hutool.core.util.StrUtil;
+import com.alibaba.fastjson.JSON;
 import com.qcloud.cos.COSClient;
 import com.qcloud.cos.exception.CosClientException;
 import com.qcloud.cos.exception.CosServiceException;
 import com.qcloud.cos.model.PutObjectRequest;
 import com.qcloud.cos.model.PutObjectResult;
 import org.hcm.lifpay.common.BaseResponse;
+import org.hcm.lifpay.misc.dto.req.UploadFileReq;
 import org.hcm.lifpay.misc.dto.resp.TencentFileModel;
 import org.hcm.lifpay.misc.service.UploadService;
 import org.slf4j.Logger;
@@ -20,8 +22,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.Base64;
 import java.util.List;
 import java.util.UUID;
 
@@ -56,72 +61,90 @@ public class UploadServiceImpl implements UploadService {
     }
 
     @Override
-    public BaseResponse<TencentFileModel> uploadFile(MultipartFile file, Integer sceneFlag) throws Exception {
-        // 优化：打印文件关键信息，而非整个对象
-        logger.info("UploadServiceImpl.uploadFile - 文件名：{}, 文件大小：{}Bytes, 场景标识：{}",
-                file.getOriginalFilename(), file.getSize(), sceneFlag);
+    public BaseResponse<TencentFileModel> uploadFile(UploadFileReq req) throws Exception {
+        // 优化日志：不打印完整Base64（太长），只打印前缀
+        logger.info("UploadServiceImpl.uploadFile - 文件名：{}, 场景标识：{}, Base64长度：{}",
+                req.getFileName(), req.getSceneFlag(), req.getFileBase64Str().length());
 
-        BaseResponse<TencentFileModel> response = new BaseResponse();
+        BaseResponse<TencentFileModel> response = new BaseResponse<>();
         TencentFileModel tencentFileModel = new TencentFileModel();
-        tencentFileModel.setFileName(file.getOriginalFilename());
-        tencentFileModel.setFileSize(file.getSize());
+        tencentFileModel.setFileName(req.getFileName());
 
-        // 1. 校验文件是否为空
-        if (file.isEmpty()) {
-            throw new IllegalArgumentException("上传的文件不能为空");
+        // ===================== 1. 基础校验 =====================
+        String base64Str = req.getFileBase64Str();
+        if (StrUtil.isEmpty(base64Str)) {
+            throw new IllegalArgumentException("上传的文件Base64不能为空");
+        }
+        if (StrUtil.isEmpty(req.getFileName())) {
+            throw new IllegalArgumentException("文件名称不能为空");
         }
 
-        // 2. 校验文件大小
-        if (file.getSize() > MAX_SIZE) {
-            throw new IllegalArgumentException("文件大小不能超过10MB");
-        }
-
-        // 3. 校验文件格式
-        String originalFilename = file.getOriginalFilename();
-        String extension = FileUtil.extName(originalFilename).toLowerCase();
+        // 校验文件格式
+        String extension = FileUtil.extName(req.getFileName()).toLowerCase();
         if (!ALLOWED_EXTENSIONS.contains(extension)) {
             throw new IllegalArgumentException("仅支持上传jpg、jpeg、png、webp格式的文件");
         }
 
-        // 4. 生成唯一文件名 + 按场景分目录（核心优化）
-        // 4.1 按sceneFlag区分存储目录，避免根目录混乱
-        String sceneDir = getSceneDirByFlag(sceneFlag);
-        // 4.2 生成无"-"的UUID，缩短URL
+        // ===================== 2. Base64解码（核心） =====================
+        // 清理Base64前缀（如 data:image/png;base64,）
+        String pureBase64 = base64Str.replaceAll("^data:image/\\w+;base64,", "");
+        // Base64解码为字节数组
+        byte[] fileBytes;
+        try {
+            fileBytes = Base64.getDecoder().decode(pureBase64);
+        } catch (IllegalArgumentException e) {
+            logger.error("Base64解码失败", e);
+            throw new Exception("文件格式错误，Base64解析失败");
+        }
+
+        // 真实文件大小校验（修复：Base64长度≠文件大小）
+        long realFileSize = fileBytes.length;
+        tencentFileModel.setFileSize(realFileSize);
+        if (realFileSize > MAX_SIZE) {
+            throw new IllegalArgumentException("文件大小不能超过10MB，当前大小：" + realFileSize / 1024 + "KB");
+        }
+
+        // ===================== 3. 生成COS存储路径 =====================
+        String sceneDir = getSceneDirByFlag(req.getSceneFlag());
         String uniqueId = UUID.randomUUID().toString().replace("-", "");
-        // 4.3 最终COS存储路径：场景目录/唯一ID.后缀
         String cosFilePath = StrUtil.join("/", sceneDir, uniqueId + "." + extension);
 
-        // 5. 将MultipartFile转为File（临时文件）
+        // ===================== 4. Base64 → 临时文件 =====================
         File tempFile = null;
         try {
+            // 创建临时文件
             tempFile = File.createTempFile("upload_", "." + extension);
-            file.transferTo(tempFile);
+            // 将解码后的字节写入临时文件（替代原file.transferTo）
+            try (FileOutputStream fos = new FileOutputStream(tempFile)) {
+                fos.write(fileBytes);
+            }
 
+            // ===================== 5. 上传COS =====================
             String bucketName = bucket + "-" + sdkAppId;
-            // 6. 上传文件到COS
             PutObjectRequest putObjectRequest = new PutObjectRequest(bucketName, cosFilePath, tempFile);
-            PutObjectResult result = cosClient.putObject(putObjectRequest);
+            cosClient.putObject(putObjectRequest);
 
-            // 7. 拼接文件访问URL（核心修复：解决硬编码分隔符问题）
-            // 使用StrUtil.join自动处理分隔符，避免双斜杠
+            // 拼接访问URL
             String fileAccessUrl = StrUtil.join("/", cosBaseUrl, cosFilePath);
-            tencentFileModel.setFilePath(fileAccessUrl);
+            tencentFileModel.setUrl(fileAccessUrl);
+            tencentFileModel.setFilePath(cosFilePath);
 
-            // 8. 完善响应信息（核心补充：设置成功状态）
-            response.setCode(200); // 假设200是成功码，根据你的BaseResponse定义调整
+            // 返回成功
+            response.setCode(200);
             response.setMessage("文件上传成功");
             response.setData(tencentFileModel);
+
         } catch (CosServiceException e) {
             logger.error("COS服务端上传失败 - 存储桶：{}, 文件路径：{}", bucket + "-" + sdkAppId, cosFilePath, e);
-            throw new Exception("COS服务端错误：" + e.getMessage(), e);
+            throw new Exception("COS服务错误：" + e.getMessage());
         } catch (CosClientException e) {
-            logger.error("COS客户端上传失败 - 网络/客户端异常", e);
-            throw new Exception("COS客户端上传失败：" + e.getMessage(), e);
+            logger.error("COS客户端上传失败", e);
+            throw new Exception("网络异常，文件上传失败");
         } catch (IOException e) {
-            logger.error("临时文件处理失败", e);
-            throw new Exception("文件处理失败：" + e.getMessage(), e);
+            logger.error("临时文件写入失败", e);
+            throw new Exception("文件处理失败");
         } finally {
-            // 删除临时文件
+            // 清理临时文件（不变）
             if (tempFile != null && tempFile.exists()) {
                 boolean deleteSuccess = tempFile.delete();
                 if (!deleteSuccess) {
@@ -157,5 +180,38 @@ public class UploadServiceImpl implements UploadService {
         }
         return sceneDir;
     }
+
+    public static void main(String[] args) throws IOException{
+//        String fileBase64Str = getFileBase64File("D:\\test.png");
+//        FileUploadDto fileUploadDto = minioFileStoreService.uploadFile("test.png", fileBase64Str,
+//                FileContentTypeEnum.PNG.getDesc());
+//        log.info(JSON.toJSONString(fileUploadDto));
+//
+//        fileBase64Str = getFileBase64File("D:\\test.jpg");
+//        fileUploadDto = minioFileStoreService.uploadFile("test.jpg", fileBase64Str,
+//                FileContentTypeEnum.JPG.getDesc());
+//        log.info(JSON.toJSONString(fileUploadDto));
+//
+//        fileBase64Str = getFileBase64File("D:\\test.jpeg");
+//        fileUploadDto = minioFileStoreService.uploadFile("test.jpeg", fileBase64Str,
+//                FileContentTypeEnum.JPEG.getDesc());
+//        log.info(JSON.toJSONString(fileUploadDto));
+//
+//        fileBase64Str = getFileBase64File("D:\\test.bmp");
+//        fileUploadDto = minioFileStoreService.uploadFile("test.bmp", fileBase64Str,
+//                FileContentTypeEnum.BMP.getDesc());
+//        log.info(JSON.toJSONString(fileUploadDto));
+    }
+
+
+    public static String getFileBase64File(String filePath) throws IOException {
+        File file = new File(filePath);
+        int fileLen = (int) file.length();
+        byte[] buff = new byte[fileLen];
+        FileInputStream fileInputStream = new FileInputStream(file);
+        fileInputStream.read(buff, 0, fileLen);
+        return Base64.getEncoder().encodeToString(buff);
+    }
+
 
 }

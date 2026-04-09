@@ -3,9 +3,7 @@ package org.hcm.lifpay.user.service;
 import org.hcm.lifpay.common.BaseRequest;
 import org.hcm.lifpay.common.BaseResponse;
 import org.hcm.lifpay.user.dto.req.*;
-import org.hcm.lifpay.user.dto.resp.LoginResponse;
-import org.hcm.lifpay.user.dto.resp.RefreshTokenResDto;
-import org.hcm.lifpay.user.dto.resp.UserInfoResp;
+import org.hcm.lifpay.user.dto.resp.*;
 
 import javax.servlet.http.HttpServletResponse;
 
@@ -40,5 +38,28 @@ public interface UserLoginService {
      */
     BaseResponse<RefreshTokenResDto> checkRefreshToken(RefreshTokenReq req);
 
-//    BaseResponse<LoginUserInfoResponse> getLoginUserInfo(LoginUserInfoRequest request);
+
+
+    /**
+     * 创建扫码登录二维码
+     * */
+    BaseResponse<CreateLoginQrCodeResp> createLoginQrCode(CreateLoginQrCodeReq req);
+
+    /**
+     * 扫登录二维码
+     * */
+    BaseResponse<ScanQrCodeResp> scanLoginQrCode(LoginQrCodeReq req);
+    /**
+     * 查询登录二维码
+     * */
+    BaseResponse<LoginQrCodeStateResp> getLoginQrCodeState(LoginQrCodeReq req, HttpServletResponse httpServletResponse);
+    /**
+     * 登录确认
+     * */
+    BaseResponse confirmLogin(LoginQrCodeReq req);
+
+    /**
+     * 取消登录
+     * */
+    BaseResponse cancelLogin(LoginQrCodeReq req);
 }

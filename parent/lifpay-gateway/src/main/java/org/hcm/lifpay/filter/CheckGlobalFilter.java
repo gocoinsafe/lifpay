@@ -28,6 +28,7 @@ import org.springframework.data.redis.core.script.RedisScript;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
 import org.springframework.http.HttpCookie;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.http.server.reactive.ServerHttpResponse;
 import org.springframework.http.server.reactive.ServerHttpResponseDecorator;
@@ -92,6 +93,7 @@ public class CheckGlobalFilter implements GlobalFilter, Ordered {
         ServerHttpRequest request = exchange.getRequest();
         String uri = request.getPath().value();
         log.info("uri =======" + uri);
+
         Flux<DataBuffer> cachedBody = exchange.getAttribute(CacheBodyUtil.CACHE_REQUEST_BODY_OBJECT_KEY);
         log.info("cachedBody====" + JSON.toJSONString(cachedBody));
         if (cachedBody == null) {

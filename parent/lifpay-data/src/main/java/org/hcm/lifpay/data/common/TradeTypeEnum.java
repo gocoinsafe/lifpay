@@ -38,4 +38,14 @@ public enum TradeTypeEnum {
         // 3. 无匹配值返回null
         return null;
     }
+
+
+    public static TradeTypeEnum getFromName(String name) {
+        for (TradeTypeEnum b : TradeTypeEnum.values()) {
+            if (b.getName().equals(name)) {
+                return b;
+            }
+        }
+        return null;
+    }
 }

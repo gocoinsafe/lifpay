@@ -9,7 +9,11 @@ import lombok.Getter;
 public enum TradeMethodEnum {
 
     LIGHTNING(1, "lightning", "闪电支付"),
-    OTHER(2, "other", "其他"),
+    SPARK(2, "spark", "spark"),
+    TOKEN(3, "token", "token"),
+    DEPOSIT(4, "deposit", "deposit"),
+    WITHDRAW(5, "withdraw", "withdraw"),
+    OTHER(6, "other", "其他"),
     ;
 
     private final Integer type;
@@ -39,5 +43,14 @@ public enum TradeMethodEnum {
         return null;
     }
 
+
+    public static TradeMethodEnum getFromName(String name) {
+        for (TradeMethodEnum b : TradeMethodEnum.values()) {
+            if (b.getName().equals(name)) {
+                return b;
+            }
+        }
+        return TradeMethodEnum.OTHER;
+    }
 
 }

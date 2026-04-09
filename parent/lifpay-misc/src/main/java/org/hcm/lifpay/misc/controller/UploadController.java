@@ -5,6 +5,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.hcm.lifpay.common.BaseResponse;
+import org.hcm.lifpay.misc.dto.req.UploadFileReq;
 import org.hcm.lifpay.misc.dto.resp.TencentFileModel;
 import org.hcm.lifpay.misc.service.UploadService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,17 +30,17 @@ public class UploadController {
     /**
      * 上传文件的公共接口  <br/>
      *
-     * @param file
-     * @param sceneFlag 场景标识；1-上传头像场景...,默认空，针对所有场景
+     * @param req
+     * @param
      * @Author jerry Song
      * @Date
      */
     @PostMapping(value = "/upload")
     @Operation(summary = "上传文件")
-    public BaseResponse<TencentFileModel> upload(@RequestPart("file") MultipartFile file, @RequestParam(value = "sceneFlag", required = false) Integer sceneFlag) {
-        log.info("upload.file:{}",file.getName());
+    public BaseResponse<TencentFileModel> upload(@RequestBody UploadFileReq req) {
+        log.info("upload.file:{}",req.getFileName());
         try {
-            return service.uploadFile(file, sceneFlag);
+            return service.uploadFile(req);
         }catch (Exception e){
             log.error("upload.error:{}",e.getMessage());
         }

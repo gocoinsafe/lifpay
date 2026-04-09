@@ -19,15 +19,16 @@ import org.hcm.lifpay.misc.req.InnerGetVerifyCodeReq;
 import org.hcm.lifpay.misc.resp.GetVerifyCodeResp;
 import org.hcm.lifpay.redis.RedisDBKey;
 import org.hcm.lifpay.redis.RedisDS;
+import org.hcm.lifpay.user.constant.Constant;
+import org.hcm.lifpay.user.constant.EntranceEnum;
 import org.hcm.lifpay.user.constant.UserStatusEnum;
 import org.hcm.lifpay.user.constant.UserTypeEnum;
 import org.hcm.lifpay.user.dao.entity.UserInfoDo;
 import org.hcm.lifpay.user.dao.repository.UserInfoRepository;
 import org.hcm.lifpay.user.dto.UserResultEnum;
 import org.hcm.lifpay.user.dto.req.*;
-import org.hcm.lifpay.user.dto.resp.LoginResponse;
-import org.hcm.lifpay.user.dto.resp.RefreshTokenResDto;
-import org.hcm.lifpay.user.dto.resp.UserInfoResp;
+import org.hcm.lifpay.user.dto.resp.*;
+import org.hcm.lifpay.user.exception.ErrorCodeException;
 import org.hcm.lifpay.user.exception.LifpayException;
 import org.hcm.lifpay.user.remote.MiscRemoteService;
 import org.hcm.lifpay.user.service.UserLoginService;
@@ -88,8 +89,17 @@ public class UserLoginServiceImpl implements UserLoginService {
     @Value("${tokenExpireTime.refresh_token_Expire_Time}")
     int refreshTokenValidTime;
 
-    @Value("${admin.domain}")
-    String domain;
+    @Value("${cookie.dashBoard.domain:https://test.lifpay.me}")
+    private String dashBoardDomain;
+
+    @Value("${loginQrCode.valid_second:60}")
+    private int loginCodeValidSecond;
+
+    @Value("${tokenExpireTime.web_token_Expire_Time:60}")
+    private int webTokenValidTime;
+
+    @Value("${tokenExpireTime.web_refresh_token_Expire_Time:3600}")
+    private int webTrefreshTokenValidTime;
 
 
     @Override
@@ -227,6 +237,7 @@ public class UserLoginServiceImpl implements UserLoginService {
             userInfo.setLightning(userInfoDO.getLightning());
             userInfo.setStatus(userInfoDO.getStatus());
             userInfo.setIconUrl(userInfoDO.getIconUrl());
+            userInfo.setBio(userInfoDO.getBio());
             userInfo.setUserType(userInfoDO.getUserType());
             userInfo.setCreateTime(userInfoDO.getCreateTime());
         }
@@ -604,56 +615,217 @@ public class UserLoginServiceImpl implements UserLoginService {
     }
 
 
-    public static void main(String[] args) throws Exception {
-//        testLoginEncryptDecrypt();
+
+    @Override
+    public BaseResponse<CreateLoginQrCodeResp> createLoginQrCode(CreateLoginQrCodeReq req) {
+        BaseResponse<CreateLoginQrCodeResp> response = new BaseResponse<>();
+        CreateLoginQrCodeResp createLoginQrCodeResp = new CreateLoginQrCodeResp();
+        String qrCodeId = generateQrCodeKey(req.getDeviceId(), req.getPlatform());
+        long expireTime = System.currentTimeMillis() + loginCodeValidSecond * 1000;
+        QrCodeDto qrCodeDto = new QrCodeDto(req.getDeviceId(), req.getPlatform(), Constant.QrCode.QrCodeStatus.WAIT_SCAN.ordinal(), req.getPublicKey());
+        redisDS.setex(qrCodeId, JSONObject.toJSONString(qrCodeDto), loginCodeValidSecond);
+        createLoginQrCodeResp.setExpireTime(expireTime);
+        createLoginQrCodeResp.setQrCodeId(qrCodeId);
+        response.setData(createLoginQrCodeResp);
+        return response;
     }
 
-//    public static void testLoginEncryptDecrypt() throws Exception {
-//        // ========= 1. 模拟前端准备数据 =========
-//        String clientPublicKey = ""; // 前端自己生成的椭圆曲线的公钥
-//        String plainPassword = "123456"; // 明文密码
-//
-//        // 关键：按后端预期拆分数据为两部分（这里简单按长度拆分，实际前端需保持一致）
-//        int splitIndex = plainPassword.length() / 2;
-//        String passwordPart1 = plainPassword.substring(0, splitIndex); // 密码前半段
-//        String passwordPart2 = plainPassword.substring(splitIndex);     // 密码后半段
-//
-//        // part1明文 =rsa公钥 + "&" + 密码前半段（后端解密后需要提取publicKey）
-//        String part1Plain = clientPublicKey + "&" + passwordPart1;
-//        // part2明文 = 密码后半段
-//        String part2Plain = passwordPart2;
-//
-//        // ========= 2. 前端用RSA公钥加密两部分 =========
-//        String part1Enc = RSASignature.doEncrypt(part1Plain, RSA_PUBLIC_KEY); // 加密part1
-//        String part2Enc = RSASignature.doEncrypt(part2Plain, RSA_PUBLIC_KEY); // 加密part2
-//
-//        // 前端传入的password = 两部分密文用&拼接（核心修正点）
-//        String reqPasswordtt = part1Enc + "&" + part2Enc;
-//        logger.info(reqPasswordtt);
-//
-//        String reqPassword = "KsBcvg1iLhsBUWR15WwukBTHhzcA2kpQMKqNBxgYyocg0kbDJbGtSha6BXR6bReU2PZDLa6ItePz2UONqn1E/+GkNx6660E4dSePZx+h+wrmdJZ27ZtYOpgGrn6MqrnhV7ScP4IeGQN/sCA2lS883Zde5PBAHIzfOnfcuzfV9rmHtH7fE4NsSM2rLMO8U6YlNtalXYQJ2j4wjlotPPQI/CAxeRWFJdWmKpnXkZ9zQh4j1w6sbTQrw7cCx2A6egZN5wFPy5wHKBBDUOMz0FHffCamzFIERwmY5vrSAtjfwVyszfSXMazJFxyHcmJbZes2inUY7ostDrmqfPCUXvMymg==&eI8E3EsVPEJTKHjsbh1T5utdUfJu5yDqglooPxiXkw8kibtYEzBy4eEsS6MkuS/0cZPrwbYlckpy4Wk3htiufz+Z8BDXei9Dos7qALyT2SnG1PGk2cf6nvsdv7KDt8ta+QGR5otnxF9PVxA95aXSLZjB9Faqpq9+tKU9vfslFpLhrOz8ZUizkXBUveMOUOhyx68GHZQY7so3dGfemAZRDPILUgSVauKN0tmRK/xqa5JDtyEEY0ljbGzKIptT12Be3bal2YNN9VffliVXY2vZL8ZMO72fuWgIM8eBDrVp9xmKNUu+TFeOERMTTsUDKwiHphoRKk05QonjQeGSq5dsDQ==";
-//
-//        // ========= 3. 模拟网关生成privateContent =========
-//        String timestamp = String.valueOf(System.currentTimeMillis());
-//        String privateContentStr = RSA_PRIVATE_KEY + "&&" + timestamp; // 私钥+时间戳
-//        String privateContent = AESCBCUtils.encrypt(privateContentStr, AES_KEY.substring(0, 16)); // AES加密
-//
-//        // ========= 4. 构造LoginRequest =========
-//        LoginRequest req = new LoginRequest();
-////        req.setUsername(RSASignature.doEncrypt("testUser", RSA_PUBLIC_KEY)); // 用户名加密（示例）
-//        req.setPassword(reqPassword); // 关键：使用&拼接的密文
-//        req.setAesKey(AES_KEY);
-//        req.setPrivateContent(privateContent);
-//
-//        // ========= 5. 后端解密流程（复用现有代码） =========
-//        String aesKey = req.getAesKey().substring(0, 16);
-//        String privateKey = decryptPrivateKey(req.getPrivateContent(), aesKey); // 解密得到RSA私钥
-//        Map<String, String> codeMap = decryptPublicKey(req.getPassword(), privateKey); // 现在split不会报错
-//
-//        // ========= 6. 验证结果 =========
-//        System.out.println("解密得到的明文密码: " + codeMap.get(PASSWORD)); // 应输出123456
-//        System.out.println("解密得到的客户端公钥: " + codeMap.get(PUBLIC_KEY)); // 应输出client_public_key_xxx
-//    }
+    @Override
+    public BaseResponse<ScanQrCodeResp> scanLoginQrCode(LoginQrCodeReq req) {
+        BaseResponse<ScanQrCodeResp> response = new BaseResponse<>();
+        String qrCodeId = req.getQrCodeId();
+        QrCodeDto qrCodeDto = getQrCodeInfo(qrCodeId);
+        ScanQrCodeResp qrCodeResp = new ScanQrCodeResp();
+        qrCodeResp.setPlatform(qrCodeDto.getPlatform());
+        response.setData(qrCodeResp);
+        if(qrCodeDto.getStatus() == Constant.QrCode.QrCodeStatus.CONFIRM_LOGIN.ordinal()){
+            //如果已经确认登录则二维码失效
+            response.setCode(UserResultEnum.QR_CODE_INVALID.getCode());
+            response.setMessage(UserResultEnum.QR_CODE_INVALID.getMsg());
+            return response;
+        }
+        if(qrCodeDto.getStatus() == Constant.QrCode.QrCodeStatus.WAIT_CONFIRM.ordinal() && !qrCodeDto.getUserId().equals(req.getUserId())){
+            //如果已经有用户扫码则其他用户扫会失效
+            response.setCode(UserResultEnum.QR_CODE_INVALID.getCode());
+            response.setMessage(UserResultEnum.QR_CODE_INVALID.getMsg());
+            return response;
+        }
+        qrCodeDto.setStatus(Constant.QrCode.QrCodeStatus.WAIT_CONFIRM.ordinal());
+        qrCodeDto.setAppDeviceId(req.getDeviceId());
+        qrCodeDto.setUserId(req.getUserId());
+        redisDS.setex(qrCodeId, JSONObject.toJSONString(qrCodeDto), loginCodeValidSecond);
+        return response;
+    }
+
+    @Override
+    public BaseResponse<LoginQrCodeStateResp> getLoginQrCodeState(LoginQrCodeReq req, HttpServletResponse httpServletResponse) {
+        String qrCodeId = req.getQrCodeId();
+        LoginQrCodeStateResp resp = new LoginQrCodeStateResp();
+        BaseResponse<LoginQrCodeStateResp> response = new BaseResponse<>();
+        String qrCodeDtoJson = redisDS.getStr(qrCodeId);
+        if(StringUtils.isEmpty(qrCodeDtoJson)){
+            resp.setState(Constant.QrCode.QrCodeStatus.INVALID.ordinal());
+            response.setData(resp);
+            return response;
+        }
+        QrCodeDto qrCodeDto =  JSONObject.parseObject(qrCodeDtoJson, QrCodeDto.class);
+        resp.setState(qrCodeDto.getStatus());
+        if(StringUtils.isNotEmpty(qrCodeDto.getToken())) {
+            resp.setRefreshToken(qrCodeDto.getRefreshToken());
+            EntranceEnum entranceEnum = EntranceEnum.fromValue(qrCodeDto.getPlatform());
+            String domain = getDomain(entranceEnum);
+            httpServletResponse.addCookie(createCookie(Constants.TOKEN_NAME, qrCodeDto.getToken(), -1, domain, true));
+        }
+        response.setData(resp);
+        return response;
+    }
+
+    @Override
+    public BaseResponse confirmLogin(LoginQrCodeReq req) {
+        String qrCodeId = req.getQrCodeId();
+        Long userId = Long.valueOf(req.getUserId());
+        QrCodeDto qrCodeDto = getQrCodeInfo(qrCodeId);
+        BaseResponse response = new BaseResponse<>();
+        if(StringUtils.isEmpty(qrCodeDto.getAppDeviceId()) || !req.getDeviceId().equals(qrCodeDto.getAppDeviceId())){
+            response.setCode(UserResultEnum.QR_CODE_INVALID.getCode());
+            response.setMessage(UserResultEnum.QR_CODE_INVALID.getMsg());
+            return response;
+        }
+        if(qrCodeDto.getStatus() != Constant.QrCode.QrCodeStatus.WAIT_CONFIRM.ordinal() || !qrCodeDto.getUserId().equals(userId)){
+            //只能是扫码的用户去确认
+            response.setCode(UserResultEnum.QR_CODE_INVALID.getCode());
+            response.setMessage(UserResultEnum.QR_CODE_INVALID.getMsg());
+            return response;
+        }
+        EntranceEnum entranceEnum = EntranceEnum.fromValue(qrCodeDto.getPlatform());
+        String token = generateTokenEx(userId, qrCodeDto.getWebDeviceId(), qrCodeDto.getPublicKey(), entranceEnum, getTokenValidTime(entranceEnum));
+        //放token到cookie
+        String refreshToken = generateRefreshTokenEx(userId, qrCodeDto.getWebDeviceId(), qrCodeDto.getPublicKey(), entranceEnum, getRefreshTokenValidTime(entranceEnum));
+        qrCodeDto.setStatus(Constant.QrCode.QrCodeStatus.CONFIRM_LOGIN.ordinal());
+        qrCodeDto.setToken(token);
+        qrCodeDto.setRefreshToken(refreshToken);
+        redisDS.setex(qrCodeId, JSONObject.toJSONString(qrCodeDto), Math.toIntExact(redisDS.ttl(qrCodeId)));
+        forceExit(userId, qrCodeDto.getWebDeviceId(), entranceEnum);
+        return new BaseResponse();
+    }
+
+    @Override
+    public BaseResponse cancelLogin(LoginQrCodeReq req) {
+        String qrCodeId = req.getQrCodeId();
+        QrCodeDto qrCodeDto = getQrCodeInfo(qrCodeId);
+        BaseResponse response = new BaseResponse<>();
+        if(StringUtils.isEmpty(qrCodeDto.getAppDeviceId()) || !req.getDeviceId().equals(qrCodeDto.getAppDeviceId())){
+            response.setCode(UserResultEnum.QR_CODE_INVALID.getCode());
+            response.setMessage(UserResultEnum.QR_CODE_INVALID.getMsg());
+            return response;
+        }
+        if(qrCodeDto.getStatus() != Constant.QrCode.QrCodeStatus.WAIT_CONFIRM.ordinal() || !qrCodeDto.getUserId().equals(Long.valueOf(req.getUserId()))){
+            //只能是扫码的用户去确认
+            response.setCode(UserResultEnum.QR_CODE_INVALID.getCode());
+            response.setMessage(UserResultEnum.QR_CODE_INVALID.getMsg());
+            return response;
+        }
+        qrCodeDto.setStatus(Constant.QrCode.QrCodeStatus.INVALID.ordinal());
+        redisDS.setex(qrCodeId, JSONObject.toJSONString(qrCodeDto), Math.toIntExact(redisDS.ttl(qrCodeId)));
+        return new BaseResponse();
+    }
+
+
+    private QrCodeDto getQrCodeInfo(String qrCodeId){
+        String qrCodeDtoJson = redisDS.getStr(qrCodeId);
+        if(StringUtils.isEmpty(qrCodeDtoJson)){
+            throw new ErrorCodeException(UserResultEnum.QR_CODE_INVALID);
+        }
+        return JSONObject.parseObject(qrCodeDtoJson, QrCodeDto.class);
+    }
+
+    private String generateQrCodeKey(String webDeviceId, int platform){
+        return String.format(RedisDBKey.LOGIN_QR_CODE_KEY, webDeviceId, platform, UUID.randomUUID().toString().replaceAll("-",""));
+    }
+
+
+    private void forceExit(Long userId, String deviceId, EntranceEnum entranceEnum) {
+        try {
+            String key = String.format(RedisDBKey.GET_TOKEN_BY_USERID, userId + ":" + entranceEnum.name());
+            String value = redisDS.getStr(key);
+            if (StringUtils.isEmpty(value)){
+                redisDS.setex(key , deviceId, getRefreshTokenValidTime(entranceEnum));
+            } else if(!value.equals(deviceId)) {
+                this.logout(String.valueOf(userId), value);
+                redisDS.del(key);
+                redisDS.setex(key , deviceId, getRefreshTokenValidTime(entranceEnum));
+            }
+        } catch (RuntimeException e) {
+            log.error("error occured while setting device token, error ", e);
+        }
+    }
+
+    protected String generateTokenEx(long userId, String deviceId,String publicKey,EntranceEnum entranceEnum,int tokenValidTime) {
+        String key = getTokenKey(String.valueOf(userId), deviceId);
+        String token = createToken();
+        // 设置token有效时间
+        redisDS.setex(key, token, tokenValidTime);
+        String tokenKey = String.format(RedisDBKey.GET_USER_ID_BY_TOKEN, token);
+        JSONObject jsonObject = new JSONObject();
+        jsonObject.put("userId", userId);
+        jsonObject.put("deviceId", deviceId);
+        jsonObject.put("timestamp", System.currentTimeMillis());
+        jsonObject.put("expireTime", System.currentTimeMillis() + tokenValidTime * 1000L);
+        jsonObject.put("publicKey", publicKey);
+        jsonObject.put("entranceEnum",entranceEnum.name());
+        redisDS.setex(tokenKey, jsonObject.toJSONString(), tokenValidTime);
+        return token;
+    }
+
+    protected String generateRefreshTokenEx(long userId, String deviceId,String publicKey,EntranceEnum entranceEnum, int refreshTokenValidTime) {
+        String key = getRefreshTokenKey(String.valueOf(userId), deviceId);
+        String refreshToken = createToken();
+        //设置refresh token 有效时间
+        redisDS.setex(key, refreshToken, refreshTokenValidTime);
+        String tokenKey = String.format(RedisDBKey.GET_USER_ID_BY_REFRESH_TOKEN, refreshToken);
+        JSONObject jsonObject = new JSONObject();
+        jsonObject.put("userId", userId);
+        jsonObject.put("deviceId", deviceId);
+        jsonObject.put("timestamp", System.currentTimeMillis());
+        jsonObject.put("publicKey", publicKey);
+        jsonObject.put("entranceEnum",entranceEnum.name());
+        redisDS.setex(tokenKey, jsonObject.toJSONString(), refreshTokenValidTime);
+        return refreshToken;
+    }
+
+    private String getDomain(EntranceEnum entranceEnum){
+        switch (entranceEnum){
+            case DASHBOARD:
+                return dashBoardDomain;
+            case OTHER:
+                return dashBoardDomain;
+            default:
+                throw new ErrorCodeException(UserResultEnum.BAD_INPUT);
+        }
+    }
+
+    private int getTokenValidTime(EntranceEnum entranceEnum){
+        switch (entranceEnum){
+            case DASHBOARD:
+                return webTokenValidTime;
+            case OTHER:
+                return webTokenValidTime;
+            default:
+                return webTokenValidTime;
+        }
+    }
+
+    private int getRefreshTokenValidTime(EntranceEnum entranceEnum){
+        switch (entranceEnum){
+            case DASHBOARD:
+                return webTrefreshTokenValidTime;
+            case OTHER:
+                return webTrefreshTokenValidTime;
+            default:
+                return webTrefreshTokenValidTime;
+        }
+    }
+
 
 
 }

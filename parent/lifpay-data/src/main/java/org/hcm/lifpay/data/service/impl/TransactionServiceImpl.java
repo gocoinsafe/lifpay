@@ -10,9 +10,13 @@ import org.hcm.lifpay.common.BaseRequest;
 import org.hcm.lifpay.common.BaseResponse;
 import org.hcm.lifpay.common.CommonPage;
 import org.hcm.lifpay.data.common.DataResultEnum;
+import org.hcm.lifpay.data.common.TradeMethodEnum;
+import org.hcm.lifpay.data.common.TradeStatusEnum;
+import org.hcm.lifpay.data.common.TradeTypeEnum;
 import org.hcm.lifpay.data.dao.entity.UserTransactionDo;
 import org.hcm.lifpay.data.dao.repository.UserTransactionRepository;
 import org.hcm.lifpay.data.dto.req.TransactionListReq;
+import org.hcm.lifpay.data.dto.req.TransactionSubmitData;
 import org.hcm.lifpay.data.dto.req.TransactionSubmitReq;
 import org.hcm.lifpay.data.dto.resp.TransactionListResp;
 import org.hcm.lifpay.data.service.TransactionService;
@@ -45,46 +49,63 @@ public class TransactionServiceImpl implements TransactionService {
     public BaseResponse<?> transactionSubmit(TransactionSubmitReq request) {
         logger.info("transactionSubmit.req:{}", JSON.toJSONString(request));
         BaseResponse response = new BaseResponse<>();
-        if (null == request.getUserId() && StringUtils.isEmpty(request.getUserPrimaryKey())){
-            response.setCode(DataResultEnum.PARAM_ERROR.getCode());
-            response.setMessage(DataResultEnum.PARAM_ERROR.getDesc());
-            return response;
-        }
-        if (StringUtils.isEmpty(request.getTradeId())){
-            response.setCode(DataResultEnum.TRANSACTION_ID_ISNULL_ERROR.getCode());
-            response.setMessage(DataResultEnum.TRANSACTION_ID_ISNULL_ERROR.getDesc());
-            return response;
-        }
+        if (CollectionUtil.isNotEmpty(request.getList())){
+            for (TransactionSubmitData data: request.getList()){
+                if (null == request.getUserId() && StringUtils.isEmpty(data.getUserPrimaryKey())){
+                    response.setCode(DataResultEnum.PARAM_ERROR.getCode());
+                    response.setMessage(DataResultEnum.PARAM_ERROR.getDesc());
+                    return response;
+                }
+                if (StringUtils.isEmpty(data.getTradeId())){
+                    response.setCode(DataResultEnum.TRANSACTION_ID_ISNULL_ERROR.getCode());
+                    response.setMessage(DataResultEnum.TRANSACTION_ID_ISNULL_ERROR.getDesc());
+                    return response;
+                }
+                try {
+                    // 1. 构建数据库实体
+                    UserTransactionDo transactionDo = new UserTransactionDo();
+                    transactionDo.setUserId(request.getUserId());
+                    transactionDo.setUserPrimaryKey(data.getUserPrimaryKey());
+                    transactionDo.setTradeId(data.getTradeId());
+                    transactionDo.setTradeHash(data.getTradeHash());
+                    transactionDo.setAmount(data.getAmount());
+                    transactionDo.setFees(data.getFees());
 
-        try {
-
-            // 1. 构建数据库实体
-            UserTransactionDo transactionDo = new UserTransactionDo();
-            // 拷贝同名字段（简化赋值）
-            BeanUtils.copyProperties(request, transactionDo);
-
-
-
-            // 2. 补充公共字段（如果BaseEntity的自动填充未生效，手动设置）
-            long currentTime = System.currentTimeMillis();
-            transactionDo.setCreateTime(currentTime);
-            transactionDo.setUpdateTime(currentTime);
+                    transactionDo.setMethod(TradeMethodEnum.getFromName(data.getMethod()).getType());
+                    transactionDo.setStatus(TradeStatusEnum.getFromName(data.getStatus()).getType());
+                    transactionDo.setTradeType(TradeTypeEnum.getFromName(data.getTradeType()).getType());
+                    transactionDo.setFiatPrice(data.getFiatPrice());
+                    transactionDo.setFiatCurrency(data.getFiatCurrency());
+                    transactionDo.setInvoice(data.getInvoice());
+                    transactionDo.setPayeePubkey(data.getPayeePubkey());
+                    transactionDo.setRemark(data.getRemark());
+                    transactionDo.setTradeTime(data.getTradeTime());
 
 
-            // 3. 插入数据库
-            int insertResult = userTransactionRepository.insert(transactionDo);
-            if (insertResult <= 0) {
-                logger.error("交易记录插入失败，request：{}", JSON.toJSONString(request));
-                response.setCode(DataResultEnum.TRANSACTION_INSERTION_FAILED_ERROR.getCode());
-                response.setMessage(DataResultEnum.TRANSACTION_INSERTION_FAILED_ERROR.getDesc());
-                return response;
+                    // 2. 补充公共字段（如果BaseEntity的自动填充未生效，手动设置）
+                    long currentTime = System.currentTimeMillis();
+                    transactionDo.setCreateTime(currentTime);
+                    transactionDo.setUpdateTime(currentTime);
+
+                    // todo: 这里的单挑插入可以改为批量插入
+                    // 3. 插入数据库
+                    int insertResult = userTransactionRepository.insert(transactionDo);
+                    if (insertResult <= 0) {
+                        logger.error("交易记录插入失败，request：{}", JSON.toJSONString(request));
+                        response.setCode(DataResultEnum.TRANSACTION_INSERTION_FAILED_ERROR.getCode());
+                        response.setMessage(DataResultEnum.TRANSACTION_INSERTION_FAILED_ERROR.getDesc());
+                        return response;
+                    }
+
+                    logger.info("交易记录插入成功，交易ID：{}，tradeHash：{}", transactionDo.getId(), data.getTradeHash());
+                } catch (Exception e) {
+                    logger.error("提交交易记录异常，request：{}", JSON.toJSONString(request), e);
+                    throw new RuntimeException("交易记录提交失败：" + e.getMessage());
+                }
+
             }
-
-            logger.info("交易记录插入成功，交易ID：{}，tradeHash：{}", transactionDo.getId(), request.getTradeHash());
-        } catch (Exception e) {
-            logger.error("提交交易记录异常，request：{}", JSON.toJSONString(request), e);
-            throw new RuntimeException("交易记录提交失败：" + e.getMessage());
         }
+
         response.setCode(DataResultEnum.SUCCESS.getCode());
         response.setMessage(DataResultEnum.SUCCESS.getDesc());
         return response;

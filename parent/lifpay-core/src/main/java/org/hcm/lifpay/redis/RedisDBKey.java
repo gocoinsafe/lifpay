@@ -42,6 +42,14 @@ public class RedisDBKey {
      */
     public static final String USER_INFO = "user:id:%s:userinfo";
 
+    /**
+     * login:webDeviceId:type:uuid
+     */
+    public static final String LOGIN_QR_CODE_KEY = "login:%s:%s:%s";
+
+
+    public static final String GET_TOKEN_BY_USERID = "dashboard:token:%s";
+
     public static String getAdminUserInfoKey(Long userId){
         return String.format(RedisDBKey.USER_INFO, userId);
     }

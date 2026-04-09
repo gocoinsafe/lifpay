@@ -32,7 +32,7 @@ public enum UserResultEnum {
     AGREEMENT_EXIT(9021,"无效的协议类型"),
     AGREED_REPEATED_AGREED(9022,"该用户已同意过协议，现为反复同意"),
 
-
+    QR_CODE_INVALID(9100,"登录二维码失效"),
 
     BOLT_CARD_UID_IS_NULL_ERROR(8000, "Bolt card Uid 不能不为空"),
     BOLT_CARD_ALREADY_BOUND_ERROR(8001, "BoltCard already bound"),
