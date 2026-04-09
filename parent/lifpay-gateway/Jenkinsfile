@@ -1,5 +1,13 @@
 pipeline {
     agent any
+
+    parameters {
+        choice(
+            name: 'ACTION',
+            choices: ['DEPLOY','ROLLBACK'],description: '选择操作： DEPLOY=发布，ROLLBACK=回滚'
+            )
+        }
+
     tools {
         maven 'maven-3.8'
     }
@@ -75,7 +83,8 @@ pipeline {
 
         // 推送镜像（暂时忽略）
 
-       stage('部署到k3s集群') {
+        stage('部署到k3s集群') {
+            when { expression { params.ACTION == 'DEPLOY'} }
             steps {
                 dir("parent/${APP_NAME}") {
                     sh '''
@@ -87,9 +96,14 @@ pipeline {
                     '''
                 }
             }
+        }
 
-
-       }
+        stage('回滚到上一版本') {
+            when { expression { params.ACTION == 'ROLLBACK'} }
+            steps {
+                sh 'kubectl rollout undo deployment/${APP_NAME} -n ${NAMESPACE}'
+            }
+        }
 
     }
 
